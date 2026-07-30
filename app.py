@@ -1,66 +1,74 @@
 import streamlit as st
 import datetime
+import pandas as pd
 
 # Configuración de la página
 st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Cálculo por Comidas | 96kg Inicial | 14.000 pasos | Cero Harinas")
+st.write("Versión Premium v2.0 | 96kg Inicial | 14.000 pasos | Cero Harinas")
 
 # 📅 CALENDARIO
 st.header("📅 Seleccionar Fecha")
 fecha_seleccionada = st.date_input("¿Qué día querés registrar?", datetime.date.today())
 
-# ⚖️ CONTROL DE PESO DIARIO
+# ⚖️ CONTROL DE PESO DIARIO Y GRÁFICO (MEJORADO)
 st.header("⚖️ Control de Peso")
 peso_actual = st.number_input("Ingresá tu peso de hoy (kg):", min_value=50.0, max_value=150.0, value=96.0, step=0.1)
 
-# Cálculo de progreso hacia la meta (-10kg = llegar a 86kg)
 peso_inicial = 96.0
 meta_peso = 86.0
 kilos_bajados = peso_inicial - peso_actual
 
 if kilos_bajados > 0:
     st.success(f"🎉 ¡Ya bajaste **{kilos_bajados:.1f} kg** desde que empezaste!")
-    progreso = min(kilos_bajados / 10.0, 1.0)
-    st.progress(progreso)
-    st.write(f"Te faltan **{peso_actual - meta_meta_peso:.1f} kg** para tu meta final de 86 kg.")
+    st.progress(min(kilos_bajados / 10.0, 1.0))
+    st.write(f"Te faltan **{peso_actual - meta_peso:.1f} kg** para tu meta final de 86 kg.")
 elif kilos_bajados == 0:
     st.info("Punto de partida: 96 kg. ¡Hoy arranca el cambio!")
 else:
-    st.warning("El peso ingresado es mayor al inicial. ¡Mantené la calma y seguí firme con el déficit!")
+    st.warning("Mantené la calma y seguí firme con el déficit, el peso fluctúa por agua.")
+
+# Simulación de Historial de Peso para el gráfico interactivo
+st.subheader("📉 Tu Curva de Descenso")
+datos_peso = pd.DataFrame({
+    "Días": ["Inicio", "Actual"],
+    "Peso (kg)": [peso_inicial, peso_actual]
+})
+st.line_chart(datos_peso.set_index("Días"))
 
 # 🚶‍♂️ PASOS
 st.header("🚶‍♂️ Tus 14.000 Pasos")
 pasos = st.number_input("¿Cuántos pasos hiciste hoy?", min_value=0, value=14000, step=500)
 kcal_pasos = int(pasos * 0.055)
 
-# 🥑 BASE DE DATOS ACTUALIZADA (¡CON QUESOS!)
+# 💧 CONTROL DE HIDRATACIÓN (NUEVO)
+st.header("💧 Control de Hidratación")
+st.write("Por cada termo de mate matutino o caminata, recordá sumar agua pura.")
+vasos_agua = st.slider("¿Cuántos vasos de agua pura (250ml) tomaste hoy?", 0, 12, 4)
+if vasos_agua < 8:
+    st.warning("⚠️ Intentá llegar a 8 vasos diarios para limpiar tu organismo y rendir más al caminar.")
+else:
+    st.success("😎 ¡Excelente nivel de hidratación para tus riñones!")
+
+# 🥑 BASE DE DATOS DE ALIMENTOS
 base_alimentos = {
-    # PROTEÍNAS ANIMALES Y PESCADOS
     "Pollo (Pechuga/Muslo)": {"kcal": 165, "prot": 31, "unidad": "100g"},
     "Carne de Vaca (Cortes magros)": {"kcal": 200, "prot": 26, "unidad": "100g"},
     "Carne de Cerdo (Costillita/Bondiola)": {"kcal": 240, "prot": 27, "unidad": "100g"},
     "Pescado de mar (Merluza/Gatuzo)": {"kcal": 90, "prot": 19, "unidad": "100g"},
     "Atún al natural (Lata)": {"kcal": 116, "prot": 26, "unidad": "100g"},
     "Huevo hervido (Unidad)": {"kcal": 70, "prot": 6, "unidad": "unidad"},
-    
-    # QUESOS Y LÁCTEOS (NUEVO)
     "Queso Cremoso / Por Salut / Mozzarella": {"kcal": 260, "prot": 20, "unidad": "100g"},
     "Queso Rallado / Reggianito / Hebras": {"kcal": 390, "prot": 35, "unidad": "100g"},
     "Queso crema / Untable descremado": {"kcal": 100, "prot": 7, "unidad": "100g"},
     "Leche descremada (Vaso 200ml)": {"kcal": 90, "prot": 7, "unidad": "unidad"},
     "Whey Protein (1 scoop)": {"kcal": 120, "prot": 24, "unidad": "unidad"},
-    
-    # CARBOHIDRATOS LIMPIOS Y LEGUMBRES
     "Papa o Batata hervida": {"kcal": 87, "prot": 2, "unidad": "100g"},
     "Calabaza/Zapallo al horno o puré": {"kcal": 30, "prot": 1, "unidad": "100g"},
     "Lentejas/Garbanzos/Porotos": {"kcal": 116, "prot": 9, "unidad": "100g"},
     "Quinoa cocida": {"kcal": 120, "prot": 4, "unidad": "100g"},
-    
-    # FRUTAS y VEGETALES
-    "Mandarina (Unidad)": {"kcal": 45, "prot": 1, "unidad": "unidad"},
     "Banana (Unidad)": {"kcal": 105, "prot": 1, "unidad": "unidad"},
     "Manzana/Pera/Naranja (Unidad)": {"kcal": 60, "prot": 0.5, "unidad": "unidad"},
     "Brócoli/Zanahoria/Tomate/Zucchini": {"kcal": 30, "prot": 2, "unidad": "100g"},
@@ -92,6 +100,14 @@ procesar_bloque_comida("📸 Almuerzo", "almuerzo")
 st.markdown("---")
 procesar_bloque_comida("🥛 Merienda", "merienda")
 st.markdown("---")
+
+# 🍊 CONTROL DE MANDARINAS (NUEVO)
+st.subheader("🍊 Bonus: Tus Mandarinas Favoritas")
+mandarinas = st.number_input("¿Cuántas mandarinas comiste en total hoy?", min_value=0, value=0, step=1)
+total_kcal_dia += (mandarinas * 45)
+total_prot_dia += (mandarinas * 1)
+st.markdown("---")
+
 procesar_bloque_comida("📸 Cena", "cena")
 st.markdown("---")
 
@@ -118,17 +134,14 @@ if st.button("Calcular Resultados de Hoy"):
         st.metric(label="Déficit Logrado", value=f"{int(deficit)} kcal", delta=f"{int(deficit)} kcal")
     
     st.subheader("💡 Análisis de tu IA:")
-    st.write(f"**Peso registrado hoy:** {peso_actual} kg")
-    
     if total_prot_dia < 85:
-        st.warning(f"⚠️ Estás en {int(total_prot_dia)}g de proteína. Intentá llegar a más de 85g para cuidar el músculo.")
+        st.warning(f"⚠️ Estás bajo en proteínas ({int(total_prot_dia)}g). Recordá cuidar el músculo.")
     else:
-        st.success("💪 ¡Espectacular nivel de proteína! Masa muscular 100% protegida.")
+        st.success("💪 ¡Nivel de proteína espectacular! Tus músculos están blindados.")
         
-    if not sin_harina_azucar:
-        st.error("🚨 Cuidado con las harinas o azúcares anotados.")
+    if mandarinas > 4:
+        st.warning("⚠️ ¡Ojo con el festival de mandarinas! Más de 4 unidades suman azúcares que restan al déficit calórico.")
         
     if deficit > 1000 and sin_harina_azucar and total_prot_dia >= 85:
         st.balloons()
-        st.success(f"🏆 ¡Día Perfecto registrado para el {fecha_seleccionada.strftime('%d/%m/%Y')}!")
-
+        st.success(f"🏆 ¡Día Perfecto registrado para el {fecha_seleccionada.strftime('%d/%m/%Y')}! Estás quemando grasa a ritmo máximo.")
