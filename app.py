@@ -5,13 +5,13 @@ import pandas as pd
 # Configuración de la página
 st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN (Fija y persistente)
+# CREAR MEMORIA DE SESIÓN (Persistente para guardar y comparar)
 if "historial_progreso" not in st.session_state:
     st.session_state["historial_progreso"] = []
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Analítico v10.0 | Tu Entrenador de Precisión IA")
+st.write("Versión Coach Premium v10.1 | Seguimiento, Guardado y Comparación")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -42,7 +42,7 @@ else:
     bmr = 655.1 + (9.56 * peso_inicial) + (1.85 * (altura * 100)) - (4.68 * edad)
     deficit_ideal = 500  
 
-# LEYENDA PULIDA DEL METABOLISMO
+# LEYENDA PULIDA DEL METABOLISMO BASAL
 st.info(f"🧬 **{nombre_usuario}**, tu cuerpo quema **{int(bmr)} kcal** al día **solo por existir, respirar y estar quieto en la cama**. ¡Esa es tu base antes de meter un solo paso! \n\n🎯 Para bajar esos 10kg cuidando tus músculos, tu déficit ideal recomendado es de **-{deficit_ideal} kcal** diarios.")
 
 # ==========================================
@@ -123,7 +123,7 @@ for alimento in almuerzo_elegidos:
 
 st.markdown("---")
 
-# Merienda RECUPERADA
+# Merienda
 st.subheader("🥛 Merienda")
 merienda_elegidos = st.multiselect("¿Qué sumaste en tu merienda?", list(base_alimentos.keys()), key="select_merienda")
 for alimento in merienda_elegidos:
@@ -176,17 +176,19 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE FINAL
+# 6. 📊 BALANCE FINAL CON RECOMENDACIONES PRECISAS Y BOTÓN MODIFICADO
 # ==========================================
 st.header("📊 Tu Balance del Día")
-if st.button("Calcular y Registrar Día"):
+
+# NOMBRE DEL BOTÓN MODIFICADO A TU GUSTO
+if st.button("💾 Guardar y Comparar mi Día"):
     gasto_total = int(bmr) + kcal_pasos
     deficit_real = gasto_total - total_kcal_dia
     calorias_objetivo = gasto_total - deficit_ideal
     calorias_faltantes = deficit_real - deficit_ideal
     meta_proteina = peso_actual * 1.2
     
-    # GUARDAR SÍ O SÍ EN EL HISTORIAL
+    # GUARDAR SÍ O SÍ EN EL HISTORIAL AL TOCAR EL BOTÓN
     nuevo_registro = {
         "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
         "Usuario": nombre_usuario,
@@ -201,6 +203,3 @@ if st.button("Calcular y Registrar Día"):
     
     st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
     st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
-    st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
-    
-    st.markdown("---")
