@@ -5,31 +5,35 @@ import pandas as pd
 # Configuración de la página
 st.set_page_config(page_title="Mi Tracker Personal - Meta -10kg", page_icon="💪", layout="centered")
 
+# CREAR MEMORIA DE SESIÓN (Guarda los días mientras no cierres la app)
+if "historial_progreso" not in st.session_state:
+    st.session_state["historial_progreso"] = []
+
+# TÍTULO PERSONALIZADO
+st.title("💪 Meta -10kg by Luciano Bravo")
+st.write("Versión Historial v5.0 | Registro Diario de Progreso")
+
 # ==========================================
-# 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE (ARRIBA)
+# 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
 # ==========================================
 st.header("📅 Identificación y Fecha")
-
-# NUEVO: Entrada para nombre, apellido o apodo
-nombre_usuario = st.text_input("¿Cómo querés que te llame la app? (Nombre, Apellido o Apodo):", value="Luciano Bravo")
-
-fecha_seleccionada = st.date_input("¿Qué día querés registrar o revisar?", datetime.date.today())
-st.write(f"Hola **{nombre_usuario}**, registrando datos para el día: **{fecha_seleccionada.strftime('%d/%m/%Y')}**")
+nombre_usuario = st.text_input("¿Cómo querés que te llame la app?:", value="Luciano Bravo")
+fecha_seleccionada = st.date_input("¿Qué día querés registrar?", datetime.date.today())
+st.write(f"Hola **{nombre_usuario}**, registrando para el día: **{fecha_seleccionada.strftime('%d/%m/%Y')}**")
 st.markdown("---")
 
 # ==========================================
 # 2. 🧬 PERFIL CORPORAL Y CÁLCULOS CIENTÍFICOS
 # ==========================================
-with st.expander(f"🧬 Configurar Perfil Corporal de {nombre_usuario} (Edad, Altura, Género)"):
+with st.expander(f"🧬 Configurar Perfil Corporal de {nombre_usuario}"):
     col_p1, col_p2 = st.columns(2)
     with col_p1:
         genero = st.radio("Seleccioná tu género:", ("Hombre", "Mujer"))
-        peso_inicial = st.number_input("¿Cuánto pesabas el primer día? (Peso Inicial):", min_value=40.0, max_value=200.0, value=96.0, step=0.1)
+        peso_inicial = st.number_input("¿Peso Inicial? (Primer día):", min_value=40.0, max_value=200.0, value=96.0, step=0.1)
     with col_p2:
         altura = st.number_input("Ingresá tu altura (metros):", min_value=1.20, max_value=2.30, value=1.77, step=0.01)
         edad = st.number_input("Ingresá tu edad:", min_value=15, max_value=100, value=39, step=1)
 
-# Cálculo automático de metabolismo (Fórmula Harris-Benedict)
 if genero == "Hombre":
     bmr = 66.47 + (13.75 * peso_inicial) + (5.00 * (altura * 100)) - (6.75 * edad)
     deficit_ideal = 700  
@@ -50,28 +54,18 @@ if kilos_bajados > 0:
     st.success(f"🎉 ¡Ya bajaste **{kilos_bajados:.1f} kg** desde que empezaste!")
     st.progress(min(kilos_bajados / 10.0, 1.0))
     st.write(f"Te faltan **{peso_actual - meta_peso:.1f} kg** para tu meta final de {meta_peso:.1f} kg.")
-elif kilos_bajados == 0:
-    st.info(f"Punto de partida: {peso_inicial} kg. ¡Hoy arranca el cambio!")
 else:
-    st.warning("Mantené la calma, el peso fluctúa por retención de agua. ¡Seguí firme!")
-
-# Gráfico interactivo
-datos_peso = pd.DataFrame({
-    "Días": ["Inicio", "Actual"],
-    "Peso (kg)": [peso_inicial, peso_actual]
-})
-st.line_chart(datos_peso.set_index("Días"))
-st.markdown("---")
+    st.info(f"Punto de partida: {peso_inicial} kg. ¡Hoy arranca el cambio!")
 
 # ==========================================
-# 4. 🚶‍♂️ PASOS Y ACTIVIDAD Y HIDRATACIÓN
+# 4. 🚶‍♂️ PASOS Y HIDRATACIÓN
 # ==========================================
 st.header("🚶‍♂️ Actividad del Día")
 pasos = st.number_input("¿Cuántos pasos hiciste hoy?", min_value=0, value=14000, step=500)
 kcal_pasos = int(pasos * 0.055)
 
 st.subheader("💧 Control de Hidratación")
-vasos_agua = st.slider("¿Cuántos vasos de agua pura (250ml) tomaste hoy?", 0, 12, 4)
+vasos_agua = st.slider("¿Cuántos vasos de agua (250ml) tomaste hoy?", 0, 12, 4)
 st.markdown("---")
 
 # ==========================================
@@ -141,43 +135,51 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE Y FEEDBACK PERSONALIZADO (MEJORADO MULTIUSER)
+# 6. 📊 BALANCE Y FUNCIÓN DE GUARDADO/DESCARGA
 # ==========================================
 st.header("📊 Tu Balance del Día")
-if st.button("Calcular Resultados de Hoy"):
+if st.button("Calcular y Registrar Día"):
     gasto_total = int(bmr) + kcal_pasos
     deficit_real = gasto_total - total_kcal_dia
     
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
-        st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
-    with col_b:
-        st.metric(label="Gasto Diario Total", value=f"{gasto_total} kcal")
-        st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
+    # AGREGAR AL HISTORIAL DE SESIÓN
+    nuevo_registro = {
+        "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
+        "Usuario": nombre_usuario,
+        "Peso (kg)": peso_actual,
+        "Pasos": pasos,
+        "Consumo (kcal)": int(total_kcal_dia),
+        "Proteínas (g)": int(total_prot_dia),
+        "Déficit (kcal)": int(deficit_real)
+    }
+    # Evitar duplicados del mismo día en la misma sesión
+    st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_registro["Fecha"]]
+    st.session_state["historial_progreso"].append(nuevo_registro)
+    
+    st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
+    st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
+    st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
     
     st.markdown("---")
-    st.subheader(f"🤖 Recomendaciones de tu Coach IA para {nombre_usuario}:")
-    
+    st.subheader(f"🤖 Recomendaciones para {nombre_usuario}:")
     if not sin_harina_azucar:
-        st.error(f"⚠️ **¡Atención {nombre_usuario}!** Hoy se escapó alguna harina refinada o azúcar agregado. No te preocupes por el tropiezo, ¡a todos nos pasa! Pero recordá que estos alimentos despiertan la ansiedad matutina y sabotean tu ayuno. ¡Mañana reseteamos el chip y volvemos con todo al 100% limpio!")
+        st.error("⚠️ ¡Atención! Hoy se escapó alguna harina o azúcar. ¡Mañana volvemos al 100% limpio!")
     else:
-        st.success(f"✅ **¡Disciplina de Acero, {nombre_usuario}!** Mantuviste las harinas y azúcares en CERO absoluto.")
+        st.success("✅ ¡Disciplina de Acero! Mantuviste las harinas y azúcares en CERO.")
 
-    meta_proteina = peso_actual * 1.2
-    if total_prot_dia < meta_proteina:
-        st.warning(f"🍗 **Refuerzo necesario:** Llegaste a {int(total_prot_dia)}g. Tu cuerpo te pide al menos {int(meta_proteina)}g para blindar tus músculos. Mañana acordate de reforzar sumando carnes, huevos o Whey Protein en tus platos principales.")
-    
-    if vasos_agua < 8:
-        st.info("💧 **Aviso de Hidratación:** Tomaste menos de 8 vasos de agua pura. Clavate un vaso al lado del mate para mantener el cuerpo hidratado.")
-        
-    if frutas > 4:
-        st.warning("🍎 **Alerta Frutal:** Comer más de 4 frutas al día aporta mucha fructosa. Controlá un poquito la cantidad.")
-
+# NUEVO: MOSTRAR HISTORIAL REGISTRADO Y BOTÓN DE DESCARGA EXCEL/CSV
+if st.session_state["historial_progreso"]:
     st.markdown("---")
-    st.subheader(f"🎯 Mensaje Especial para {nombre_usuario}:")
-    if deficit_real >= deficit_ideal and sin_harina_azucar and total_prot_dia >= meta_proteina:
-        st.balloons()
-        st.success(f"🏆 ¡DÍA PERFECTO, {nombre_usuario.upper()}! Cumpliste el déficit, protegiste tus músculos y respetaste las reglas a la perfección. Estás un paso gigante más cerca de tu meta de -10kg. ¡Mañana volvé a entrar a la app y mantené viva la racha!")
-    else:
-        st.info(f"🔥 ¡Buen intento hoy, {nombre_usuario}! Cada día anotado en este tracker es una victoria para tu constancia. No dejes de registrar: mañana abrís la app otra vez, ponés tu peso y seguimos avanzando juntos. ¡Vos podés!")
+    st.header("🗂️ Historial Guardado (Esta Sesión)")
+    df_historial = pd.DataFrame(st.session_state["historial_progreso"])
+    st.dataframe(df_historial)
+    
+    # Botón para descargar el archivo y no perderlo nunca
+    csv = df_historial.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 Descargar todo mi Historial (.csv)",
+        data=csv,
+        file_name=f"historial_peso_{nombre_usuario}.csv",
+        mime="text/csv",
+    )
+    st.info("💡 **Tip de oro:** Antes de cerrar la página, dale al botón de descargar. Así guardás tu progreso en el celu y podés ver tus datos acumulados siempre.")
