@@ -4,7 +4,8 @@ import datetime
 # Configuración de la página
 st.set_page_config(page_title="Mi Plan 10kg - Tracker", page_icon="💪", layout="centered")
 
-st.title("💪 Mi Tracker Inteligente: Meta -10kg")
+st.titlest.title("💪 Meta -10kg by Luciano Bravo")
+
 st.write("Cálculo por Comidas | 96kg | 14.000 pasos | Cero Harinas")
 
 # 📅 CALENDARIO
