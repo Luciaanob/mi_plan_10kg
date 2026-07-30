@@ -6,15 +6,15 @@ from streamlit_gsheets import GSheetsConnection
 # Configuración de la página
 st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN (Fija y persistente)
+# CREAR MEMORIA DE SESIÓN
 if "historial_progreso" not in st.session_state:
     st.session_state["historial_progreso"] = []
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Base de Datos v11.1 | Guardado Permanente en la Nube")
+st.write("Versión Base de Datos v11.2 | Guardado Permanente en la Nube")
 
-# Conexión automática con Google Sheets usando la configuración directa
+# Conexión automática con Google Sheets
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
     df_historico_real = conn.read(ttl="0m")
@@ -155,7 +155,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO E INFORME (MEJORADO ENLACE)
+# 6. 📊 BALANCE DIARIO E INFORME (ESTRUCTURA ULTRA PLANA ANTIFALLAS)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
@@ -168,30 +168,22 @@ meta_proteina = peso_actual * 1.2
 st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
 st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
 
-# NUEVO REPRODUCTOR DE GUARDADO LÓGICO DIRECTO
 if st.button("💾 Guardar y Comparar mi Día en la NUBE"):
-    nuevo_registro = pd.DataFrame([{
-        "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
-        "Usuario": nombre_usuario,
-        "Peso (kg)": peso_actual,
-        "Pasos": pasos,
-        "Consumo (kcal)": int(total_kcal_dia),
-        "Proteínas (g)": int(total_prot_dia),
-        "Déficit (kcal)": int(deficit_real)
-    }])
-    
+    nuevo_registro = pd.DataFrame([{"Fecha": fecha_seleccionada.strftime('%d/%m/%Y'), "Usuario": nombre_usuario, "Peso (kg)": peso_actual, "Pasos": pasos, "Consumo (kcal)": int(total_kcal_dia), "Proteínas (g)": int(total_prot_dia), "Déficit (kcal)": int(deficit_real)}])
     try:
         df_actualizado = pd.concat([df_historico_real, nuevo_registro]).drop_duplicates(subset=["Fecha"], keep="last")
-        # SE USA LA NUEVA CONFIGURACIÓN REPARADA DIRECTA
         conn.update(data=df_actualizado)
         st.success("📊 ¡Día guardado de forma PERMANENTE en tu planilla de Google Sheets!")
         st.balloons()
-    except Exception as e:
-        st.error(f"⚠️ Error en la conexión interna de Google. Revisá que en los Secrets diga [connections.gsheets] arriba de todo.")
-
+    except Exception:
+        st.error("⚠️ Error en la conexión interna de Google. Revisá que en los Secrets diga [connections.gsheets] arriba de todo.")
+        
     st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
-    
     st.markdown("---")
     st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
     
+    # TEXTO CORRIDO PLANO SIN RIESGOS DE ESPACIOS
     if deficit_real > 1200:
+        st.error(f"⚠️ ¡Cuidado {nombre_usuario}, estás comiendo muy poco! Hoy lograste un déficit tremendo de {int(deficit_real)} kcal. Te faltaron ingerir exactamente {int(calorias_faltantes)} kcal para alcanzar tu meta ideal de manera saludable, que sería consumir {int(calorias_objetivo)} kcal en el día. Cortar tanto la comida obliga a tu cuerpo a quemar músculo para aguantar los pasos. ¡Mañana sumale volumen al plato con papa, batata o más carne magra!")
+    if deficit_real >= deficit_ideal and deficit_real <= 1200:
+        st.success(f"🔥 ¡Excelente balance, {nombre_usuario}! Lograste un déficit de {int(deficit_real)} kcal. Estás en la zona perfecta: quemando grasa a full pero dándole la energía necesaria. ¡Camino dorado!")
