@@ -7,7 +7,7 @@ st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", l
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Ultimate Coach v4.0 | Tu Entrenador Personal IA")
+st.write("Versión Ultimate Coach v4.1 | Tu Entrenador Personal IA")
 
 # 🧬 CONFIGURACIÓN DE TIPO DE CUERPO Y PERFIL
 st.header("🧬 Perfil Corporal")
@@ -32,14 +32,14 @@ else:
 
 st.info(f"🧬 Tu cuerpo quema **{int(bmr)} kcal** al día solo por existir (Metabolismo Basal).  \n🎯 Tu déficit ideal recomendado es de **-{deficit_ideal} kcal** diarios.")
 
-# ⚖️ BARRA DE PROGRESO DE PESO UNIVERSAL
+# ⚖️ BARRA DE PROGRESO DE PESO UNIVERSAL (LÍNEA CORREGIDA)
 meta_peso = peso_inicial - 10.0
 kilos_bajados = peso_inicial - peso_actual
 
 if kilos_bajados > 0:
     st.success(f"🎉 ¡Ya bajaste **{kilos_bajados:.1f} kg** desde que empezaste!")
     st.progress(min(kilos_bajados / 10.0, 1.0))
-    st.write(f"Te faltan **{peso_actual - meta_meta_peso:.1f} kg** para tu meta final de {meta_peso:.1f} kg.")
+    st.write(f"Te faltan **{peso_actual - meta_peso:.1f} kg** para tu meta final de {meta_peso:.1f} kg.")
 elif kilos_bajados == 0:
     st.info(f"Punto de partida: {peso_inicial} kg. ¡Hoy arranca el cambio!")
 else:
@@ -145,30 +145,25 @@ if st.button("Calcular Resultados de Hoy"):
     st.markdown("---")
     st.subheader("🤖 Recomendaciones de tu Coach IA:")
     
-    # 1. Alerta de Harinas / Azúcares (Petición especial de Luciano)
     if not sin_harina_azucar:
         st.error("⚠️ **¡Atención con los Permitidos!** Hoy se escapó alguna harina refinada o azúcar agregado. No te preocupes por el tropiezo, a todos nos pasa, pero recordá que estos alimentos despiertan la ansiedad matutina y sabotean tu ayuno de 14hs. ¡Mañana reseteamos el chip y volvemos con todo al 100% limpio!")
     else:
         st.success("✅ **¡Disciplina de Acero!** Mantuviste las harinas y azúcares en CERO absoluto. Esto mantiene tu insulina plana y asegura la máxima quema de grasa.")
 
-    # 2. Control de Proteínas
     meta_proteina = peso_actual * 1.2
     if total_prot_dia < meta_proteina:
         st.warning(f"🍗 **Faltó proteína:** Llegaste a {int(total_prot_dia)}g, pero tu cuerpo de {int(peso_actual)}kg te pide al menos {int(meta_proteina)}g para blindar el músculo. Mañana reforzá el almuerzo o cena agregando más pollo, carne magra, huevo duro o sumando el scoop de Whey Protein.")
     
-    # 3. Control de Agua
     if vasos_agua < 8:
         st.info("💧 **Aviso de Hidratación:** Tomaste menos de 8 vasos de agua pura. Recordá que el mate es diurético; por cada termo que te bajes a la mañana, clavate un vaso de agua al lado para no perder minerales.")
         
-    # 4. Control de Frutas
     if frutas > 4:
-        st.warning("🍊 **Alerta Frutal:** Comer más de 4 frutas al día aporta mucha fructosa (azúcar natural). Está perfecto comer mandarinas o bananas, pero controlá la cantidad para no frenar el déficit.")
+        st.warning("🍎 **Alerta Frutal:** Comer más de 4 frutas al día aporta mucha fructosa (azúcar natural). Está perfecto comer mandarinas o bananas, pero controlá la cantidad para no frenar el déficit.")
 
-    # 5. MENSAJE FINAL DE MOTIVACIÓN CONTINUA DIARIA
     st.markdown("---")
     st.subheader("🎯 Mensaje para Luciano Bravo:")
     if deficit_real >= deficit_ideal and sin_harina_azucar and total_prot_dia >= meta_proteina:
         st.balloons()
-        st.success(f"🏆 ¡DÍA PERFECTO, LUCIANO! Cumpliste el déficit, protegiste tus músculos y respetaste las reglas. Estás un paso gigante más cerca de los 86kg. ¡Mañana volvé a entrar a la app y mantené viva la racha!")
+        st.success(f"🏆 ¡DÍA PERFECTO, LUCIANO! Cumplisse el déficit, protegiste tus músculos y respetaste las reglas. Estás un paso gigante más cerca de los 86kg. ¡Mañana volvé a entrar a la app y mantené viva la racha!")
     else:
         st.info(f"🔥 ¡Buen intento hoy, Luciano! Cada día anotado en este tracker es una victoria para tu disciplina. No rompas la constancia: mañana abrís la app otra vez, registrás tu peso matutino, tu mate con mandarina y seguimos avanzando hacia la meta. ¡Vos podés!")
