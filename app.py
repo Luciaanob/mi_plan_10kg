@@ -11,7 +11,7 @@ if "historial_progreso" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Sincero v5.1 | Registro Diario de Progreso")
+st.write("Versión Coach Sincero v5.2 | Tu Entrenador Personal IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -105,7 +105,7 @@ def procesar_bloque_comida(titulo_bloque, key_sufijo):
             if info["unidad"] == "100g":
                 cantidad = st.number_input(f"Gramos de {alimento}:", min_value=0, value=50 if "Queso" in alimento else 150, step=10 if "Queso" in alimento else 50, key=f"{alimento}_{key_sufijo}")
                 total_kcal_dia += (info["kcal"] * cantidad) / 100
-                total_prot_dia += (info["prot"] * carrot_factor := cantidad) / 100 if "Zanahoria" in alimento else (info["prot"] * cantidad) / 100
+                total_prot_dia += (info["prot"] * cantidad) / 100
             else:
                 cantidad = st.number_input(f"Unidades de {alimento}:", min_value=0, value=1, step=1, key=f"{alimento}_{key_sufijo}")
                 total_kcal_dia += info["kcal"] * cantidad
@@ -135,7 +135,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE Y FUNCIÓN DE GUARDADO/DESCARGA (MEJORADO CON CRÍTICA SINCERA)
+# 6. 📊 BALANCE Y FUNCIÓN DE GUARDADO/DESCARGA
 # ==========================================
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular y Registrar Día"):
@@ -161,7 +161,6 @@ if st.button("Calcular y Registrar Día"):
     st.markdown("---")
     st.subheader(f"🤖 Recomendaciones de tu Coach IA para {nombre_usuario}:")
     
-    # NUEVA LÓGICA DE DETECCIÓN DE SOBREPASO EXTREMO
     if deficit_real > 1200:
         st.error(f"🚨 **¡Cuidado, {nombre_usuario}! El déficit es peligrosamente alto ({int(deficit_real)} kcal).**  \nEsto suele pasar por dos motivos:  \n1. Comiste extremadamente poco hoy (lo cual va a destruir tu masa muscular y ralentizar tu metabolismo).  \n2. Hubo un error de tipeo al cargar las cantidades en la app.  \n*Consejo:* Si fue real, mañana asegurate de comer más volumen de comida limpia. Si fue un error, revisá los números de arriba.")
     elif deficit_real >= deficit_ideal:
