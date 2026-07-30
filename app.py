@@ -1,17 +1,21 @@
 import streamlit as st
 import datetime
 import pandas as pd
+from streamlit_gsheets import GSheetsConnection
 
 # Configuración de la página
 st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN (Fija y persistente para comparar)
-if "historial_progreso" not in st.session_state:
-    st.session_state["historial_progreso"] = []
-
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Premium v10.2 | Seguimiento, Guardado y Comparación")
+st.write("Versión Base de Datos v11.0 | Guardado Permanente y Comparación Semanal")
+
+# Conexión automática con Google Sheets
+try:
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    df_historico_real = conn.read(ttl="0m") # Lee los datos guardados en vivo
+except Exception:
+    df_historico_real = pd.DataFrame()
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -42,7 +46,6 @@ else:
     bmr = 655.1 + (9.56 * peso_inicial) + (1.85 * (altura * 100)) - (4.68 * edad)
     deficit_ideal = 500  
 
-# LEYENDA PULIDA DEL METABOLISMO BASAL
 st.info(f"🧬 **{nombre_usuario}**, tu cuerpo quema **{int(bmr)} kcal** al día **solo por existir, respirar y estar quieto en la cama**. ¡Esa es tu base antes de meter un solo paso! \n\n🎯 Para bajar esos 10kg cuidando tus músculos, tu déficit ideal recomendado es de **-{deficit_ideal} kcal** diarios.")
 
 # ==========================================
@@ -58,12 +61,13 @@ if kilos_bajados > 0:
 else:
     st.info(f"Punto de partida: {peso_inicial} kg. ¡Hoy arranca el cambio!")
 
-# Gráfico interactivo
-datos_peso = pd.DataFrame({
-    "Días": ["Inicio", "Actual"],
-    "Peso (kg)": [peso_inicial, peso_actual]
-})
-st.line_chart(datos_peso.set_index("Días"))
+# Gráfico interactivo diario
+st.subheader("📉 Tu Curva de Descenso Histórica")
+if not df_historico_real.empty and "Peso (kg)" in df_historico_real.columns:
+    st.line_chart(df_historico_real.set_index("Fecha")["Peso (kg)"])
+else:
+    datos_peso = pd.DataFrame({"Días": ["Inicio", "Actual"], "Peso (kg)": [peso_inicial, peso_actual]})
+    st.line_chart(datos_peso.set_index("Días"))
 st.markdown("---")
 
 # ==========================================
@@ -78,7 +82,7 @@ vasos_agua = st.slider("¿Cuántos vasos de agua (250ml) tomaste hoy?", 0, 12, 4
 st.markdown("---")
 
 # ==========================================
-# 5. 🥑 BASE DE DATOS DE ALIMENTOS COMPLETA
+# 5. 🥑 BASE DE DATOS DE ALIMENTOS
 # ==========================================
 base_alimentos = {
     "Pollo (Pechuga/Muslo)": {"kcal": 165, "prot": 31, "unidad": "100g"},
@@ -147,11 +151,10 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO E INFORMES EN PANTALLA
+# 6. 📊 BALANCE DIARIO E INFORME
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
-# Cálculo constante fuera del botón para que se actualicen las métricas base
 gasto_total = int(bmr) + kcal_pasos
 deficit_real = gasto_total - total_kcal_dia
 calorias_objetivo = gasto_total - deficit_ideal
@@ -161,9 +164,9 @@ meta_proteina = peso_actual * 1.2
 st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
 st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
 
-# BOTÓN DE GUARDADO PRINCIPAL
-if st.button("💾 Guardar y Comparar mi Día"):
-    nuevo_registro = {
+# BOTÓN DE GUARDADO PRINCIPAL EN LA NUBE PERMANENTE
+if st.button("💾 Guardar y Comparar mi Día en la NUBE"):
+    nuevo_registro = pd.DataFrame([{
         "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
         "Usuario": nombre_usuario,
         "Peso (kg)": peso_actual,
@@ -171,10 +174,16 @@ if st.button("💾 Guardar y Comparar mi Día"):
         "Consumo (kcal)": int(total_kcal_dia),
         "Proteínas (g)": int(total_prot_dia),
         "Déficit (kcal)": int(deficit_real)
-    }
-    st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_registro["Fecha"]]
-    st.session_state["historial_progreso"].append(nuevo_registro)
+    }])
     
+    # Intenta actualizar la planilla de Google Sheets de forma permanente
+    try:
+        df_actualizado = pd.concat([df_historico_real, nuevo_registro]).drop_duplicates(subset=["Fecha"], keep="last")
+        conn.update(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet"], data=df_actualizado)
+        st.success("📊 ¡Día guardado de forma PERMANENTE en la Nube! Ya podés cerrar la app sin perder nada.")
+    except Exception as e:
+        st.warning("⚠️ Los datos se calcularon pero la hoja de Google Sheets no está conectada todavía. Pasá al Paso 2.")
+
     st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
     
     st.markdown("---")
@@ -183,12 +192,3 @@ if st.button("💾 Guardar y Comparar mi Día"):
     if deficit_real > 1200:
         st.error(f"⚠️ **¡Cuidado {nombre_usuario}, estás comiendo muy poco!** Hoy lograste un déficit tremendo de {int(deficit_real)} kcal. Te faltaron ingerir exactamente **{int(calorias_faltantes)} kcal** para alcanzar tu meta ideal de manera saludable, que sería consumir **{int(calorias_objetivo)} kcal** en el día. Cortar tanto la comida obliga a tu cuerpo de {int(peso_actual)}kg a quemar masa muscular para aguantar los {pasos} pasos. \n\n💡 **Cómo solucionarlo:** ¡No dejes de comer! Mañana asegurate de sumarle a tus platos una buena porción de carbohidratos sanos (como **200g de papa o batata**) o un buen refuerzo de carne o pollo en la cena.")
     
-    if deficit_real >= deficit_ideal and deficit_real <= 1200:
-        st.success(f"🔥 **¡Excelente balance, {nombre_usuario}!** Lograste un déficit de {int(deficit_real)} kcal. Estás en la zona perfecta. ¡Camino dorado!")
-    
-    if deficit_real < deficit_ideal and deficit_real >= -500:
-        st.warning(f"⚠️ **A ajustar un poquito, {nombre_usuario}:** Hoy el déficit se quedó corto respecto a tu meta de -{deficit_ideal} kcal. Mañana intentá controlar un pelín más las porciones.")
-        
-    if deficit_real < -500:
-        st.error(f"⚠️ **Superávit Calórico Crítico:** Tus calorías superaron por mucho tu gasto. ¡Mañana achicamos los platos!")
-
