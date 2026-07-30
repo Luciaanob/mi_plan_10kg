@@ -11,7 +11,7 @@ if "historial_progreso" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Precisión v7.1 | Tu Entrenador de Precisión IA")
+st.write("Versión Coach Humano v7.2 | Tu Compañero de Equipo Diario")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -175,13 +175,12 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE FINAL MEJORADO EXPLICATIVO
+# 6. 📊 BALANCE FINAL (CON TONO CERCANO Y CÁLIDO)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular y Registrar Día"):
     gasto_total = int(bmr) + kcal_pasos
     deficit_real = gasto_total - total_kcal_dia
-    calorias_objetivo = gasto_total - deficit_ideal
     
     nuevo_registro = {
         "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
@@ -200,8 +199,7 @@ if st.button("Calcular y Registrar Día"):
     st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
     
     st.markdown("---")
-    st.subheader(f"🤖 Análisis Clínico de tu Déficit para {nombre_usuario}:")
+    st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
     
-    # EXPLICACIÓN COMPLETA REQUERIDA POR LUCIANO
-    st.write(f"📊 **Tus números de hoy en detalle:**")
-    st.write(f"* Tu cuerpo gastó un total de **{gasto_total} kcal** (Metabolismo Basal + tus {pasos} pasos).")
+    # TONO HUMANO Y CÁLIDO DEVUELTO (Petición Luciano)
+    if deficit_real > 1200:
