@@ -7,6 +7,11 @@ st.set_page_config(page_title="Mi Plan 10kg - Tracker", page_icon="💪", layout
 st.title("💪 Mi Tracker Personal: Meta -10kg")
 st.write("Seguimiento diario para 96kg | 14.000 pasos | Cero Harinas")
 
+# NUEVO: SECCIÓN CALENDARIO
+st.header("📅 Seleccionar Fecha")
+fecha_seleccionada = st.date_input("¿Qué día querés registrar o revisar?", datetime.date.today())
+st.write(f"Registrando datos para el día: **{fecha_seleccionada.strftime('%d/%m/%Y')}**")
+
 # 1. SECCIÓN PASOS
 st.header("🚶‍♂️ Tus 14.000 Pasos")
 pasos = st.number_input("¿Cuántos pasos hiciste hoy?", min_value=0, value=14000, step=500)
@@ -15,8 +20,14 @@ if pasos >= 14000:
 else:
     st.warning(f"¡Faltan {14000 - pasos} pasos para la meta diaria!")
 
-# 2. SECCIÓN ALMUERZO GANADOR
-st.header("🍽️ Almuerzo Ganador Check")
+# NUEVO: REGISTRO DETALLADO DE COMIDAS Y CANTIDADES
+st.header("📝 Detalle de Comidas del Día")
+
+# Almuerzo detallado
+st.subheader("📸 Almuerzo")
+almuerzo_detallado = st.text_area("¿Qué almorzaste hoy y en qué cantidad?", 
+                                  placeholder="Ej: 2 mitades de huevo, 150g de pollo rebozado, brócoli y 1 banana")
+
 col1, col2 = st.columns(2)
 with col1:
     proteina = st.checkbox("Proteína Sólida (Pollo/Cerdo/Huevo)")
@@ -28,29 +39,36 @@ with col2:
 if proteina and verdura and carbo_limpio and sin_harina_azucar:
     st.success("¡Almuerzo Perfecto de Manual! 🏆")
 
-# 3. SECCIÓN MERIENDA Y CENA
-st.header("🥛 Merienda y Cena")
+# Merienda
+st.subheader("🥛 Merienda")
 whey = st.checkbox("Scoop de Whey Protein con leche descremada (19:00 hs)")
-cena_limpia = st.checkbox("Cena Proteica y Limpia (Air Fryer)")
+merienda_extra = st.text_input("¿Sumaste algo más a la merienda?", placeholder="Ej: 2 mandarinas")
+
+# Cena detallada
+st.subheader("🥩 Cena")
+cena_detallada = st.text_area("¿Qué cenaste hoy y en qué cantidad?", 
+                               placeholder="Ej: 2 costillitas de cerdo en la Air Fryer, solas")
+cena_limpia = st.checkbox("Cena Proteica y Limpia")
 
 # 4. TEMPORIZADOR DE AYUNO (14 HS)
 st.header("⏱️ Control de Ayuno (14hs)")
 hora_cena = st.time_input("¿A qué hora terminás de cenar?", datetime.time(22, 0))
-# Calcular hora de fin de ayuno
 hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + datetime.timedelta(hours=14)).time()
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs** (Recordá el mate con cáscara de mandarina).")
 
 # 5. CÁLCULO DE BALANCE DIARIO
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular Resultados de Hoy"):
-    # Estimación calórica base
     gasto_total = 1920 + int(pasos * 0.055)
     
-    # Consumo estimado según checks
     consumo = 0
     if proteina and carbo_limpio and verdura: consumo += 550
     if whey: consumo += 210
     if cena_limpia: consumo += 380
+    
+    # Ajuste estimado si escribió mandarinas extra
+    if "mandarina" in merienda_extra.lower():
+        consumo += 45
     
     deficit = gasto_total - consumo
     
@@ -58,6 +76,13 @@ if st.button("Calcular Resultados de Hoy"):
     st.metric(label="Consumo Estimado", value=f"{consumo} kcal")
     st.metric(label="Déficit Logrado", value=f"{deficit} kcal", delta=f"{deficit} kcal", delta_color="normal")
     
+    # Mostrar resumen de lo anotado para control
+    st.subheader("📝 Resumen Guardado en Pantalla:")
+    st.write(f"**Fecha:** {fecha_seleccionada.strftime('%d/%m/%Y')}")
+    st.write(f"**Almuerzo anotado:** {almuerzo_detallado if almuerzo_detallado else 'No completado'}")
+    st.write(f"**Cena anotada:** {cena_detallada if cena_detallada else 'No completado'}")
+    
     if deficit > 1200 and sin_harina_azucar:
         st.balloons()
         st.success("¡Día espectacular! Estás oxidando pura grasa y protegiendo tu músculo.")
+
