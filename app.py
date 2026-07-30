@@ -6,11 +6,30 @@ st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", l
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Cálculo por Comidas | 96kg | 14.000 pasos | Cero Harinas")
+st.write("Cálculo por Comidas | 96kg Inicial | 14.000 pasos | Cero Harinas")
 
 # 📅 CALENDARIO
 st.header("📅 Seleccionar Fecha")
 fecha_seleccionada = st.date_input("¿Qué día querés registrar?", datetime.date.today())
+
+# ⚖️ CONTROL DE PESO DIARIO (NUEVO)
+st.header("⚖️ Control de Peso")
+peso_actual = st.number_input("Ingresá tu peso de hoy (kg):", min_value=50.0, max_value=150.0, value=96.0, step=0.1)
+
+# Cálculo de progreso hacia la meta (-10kg = llegar a 86kg)
+peso_inicial = 96.0
+meta_peso = 86.0
+kilos_bajados = peso_inicial - peso_actual
+
+if kilos_bajados > 0:
+    st.success(f"🎉 ¡Ya bajaste **{kilos_bajados:.1f} kg** desde que empezaste!")
+    progreso = min(kilos_bajados / 10.0, 1.0)
+    st.progress(progreso)
+    st.write(f"Te faltan **{peso_actual - meta_peso:.1f} kg** para tu meta final de 86 kg.")
+elif kilos_bajados == 0:
+    st.info("Punto de partida: 96 kg. ¡Hoy arranca el cambio!")
+else:
+    st.warning("El peso ingresado es mayor al inicial. ¡Mantené la calma y seguí firme con el déficit!")
 
 # 🚶‍♂️ PASOS
 st.header("🚶‍♂️ Tus 14.000 Pasos")
@@ -38,11 +57,9 @@ base_alimentos = {
     "Leche descremada (Vaso 200ml)": {"kcal": 90, "prot": 7, "unidad": "unidad"},
 }
 
-# Variables globales para sumar todo
 total_kcal_dia = 0
 total_prot_dia = 0
 
-# Función secundaria para procesar alimentos por bloque de comida
 def procesar_bloque_comida(titulo_bloque, key_sufijo):
     global total_kcal_dia, total_prot_dia
     st.subheader(titulo_bloque)
@@ -60,32 +77,22 @@ def procesar_bloque_comida(titulo_bloque, key_sufijo):
                 total_kcal_dia += info["kcal"] * cantidad
                 total_prot_dia += info["prot"] * cantidad
 
-# 📝 SECCIONES DE COMIDAS SEPARADAS
 st.header("📝 Registro por Comidas")
-
-# 1. Almuerzo
 procesar_bloque_comida("📸 Almuerzo", "almuerzo")
 st.markdown("---")
-
-# 2. Merienda
 procesar_bloque_comida("🥛 Merienda", "merienda")
 st.markdown("---")
-
-# 3. Cena
 procesar_bloque_comida("🥩 Cena", "cena")
 st.markdown("---")
 
-# ⚠️ FILTRO ESTRICTO
 st.subheader("⚠️ Filtro de Reglas")
 sin_harina_azucar = st.checkbox("❌ Confirmo que comí CERO Harinas y Cero Azúcares hoy")
 
-# ⏱️ CONTROL DE AYUNO
 st.header("⏱️ Control de Ayuno (14hs)")
 hora_cena = st.time_input("¿A qué hora terminás de cenar?", datetime.time(22, 0))
 hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + datetime.timedelta(hours=14)).time()
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
-# 📊 BALANCE FINAL AUTOMÁTICO
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular Resultados de Hoy"):
     gasto_total = 1920 + kcal_pasos
@@ -100,6 +107,8 @@ if st.button("Calcular Resultados de Hoy"):
         st.metric(label="Déficit Logrado", value=f"{int(deficit)} kcal", delta=f"{int(deficit)} kcal")
     
     st.subheader("💡 Análisis de tu IA:")
+    st.write(f"**Peso registrado hoy:** {peso_actual} kg")
+    
     if total_prot_dia < 85:
         st.warning(f"⚠️ Estás en {int(total_prot_dia)}g de proteína. Intentá llegar a más de 85g para cuidar el músculo.")
     else:
