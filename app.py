@@ -12,7 +12,7 @@ st.write("Cálculo por Comidas | 96kg Inicial | 14.000 pasos | Cero Harinas")
 st.header("📅 Seleccionar Fecha")
 fecha_seleccionada = st.date_input("¿Qué día querés registrar?", datetime.date.today())
 
-# ⚖️ CONTROL DE PESO DIARIO (NUEVO)
+# ⚖️ CONTROL DE PESO DIARIO
 st.header("⚖️ Control de Peso")
 peso_actual = st.number_input("Ingresá tu peso de hoy (kg):", min_value=50.0, max_value=150.0, value=96.0, step=0.1)
 
@@ -25,7 +25,7 @@ if kilos_bajados > 0:
     st.success(f"🎉 ¡Ya bajaste **{kilos_bajados:.1f} kg** desde que empezaste!")
     progreso = min(kilos_bajados / 10.0, 1.0)
     st.progress(progreso)
-    st.write(f"Te faltan **{peso_actual - meta_peso:.1f} kg** para tu meta final de 86 kg.")
+    st.write(f"Te faltan **{peso_actual - meta_meta_peso:.1f} kg** para tu meta final de 86 kg.")
 elif kilos_bajados == 0:
     st.info("Punto de partida: 96 kg. ¡Hoy arranca el cambio!")
 else:
@@ -36,25 +36,35 @@ st.header("🚶‍♂️ Tus 14.000 Pasos")
 pasos = st.number_input("¿Cuántos pasos hiciste hoy?", min_value=0, value=14000, step=500)
 kcal_pasos = int(pasos * 0.055)
 
-# 🥑 BASE DE DATOS DE ALIMENTOS
+# 🥑 BASE DE DATOS ACTUALIZADA (¡CON QUESOS!)
 base_alimentos = {
+    # PROTEÍNAS ANIMALES Y PESCADOS
     "Pollo (Pechuga/Muslo)": {"kcal": 165, "prot": 31, "unidad": "100g"},
     "Carne de Vaca (Cortes magros)": {"kcal": 200, "prot": 26, "unidad": "100g"},
     "Carne de Cerdo (Costillita/Bondiola)": {"kcal": 240, "prot": 27, "unidad": "100g"},
     "Pescado de mar (Merluza/Gatuzo)": {"kcal": 90, "prot": 19, "unidad": "100g"},
     "Atún al natural (Lata)": {"kcal": 116, "prot": 26, "unidad": "100g"},
     "Huevo hervido (Unidad)": {"kcal": 70, "prot": 6, "unidad": "unidad"},
+    
+    # QUESOS Y LÁCTEOS (NUEVO)
+    "Queso Cremoso / Por Salut / Mozzarella": {"kcal": 260, "prot": 20, "unidad": "100g"},
+    "Queso Rallado / Reggianito / Hebras": {"kcal": 390, "prot": 35, "unidad": "100g"},
+    "Queso crema / Untable descremado": {"kcal": 100, "prot": 7, "unidad": "100g"},
+    "Leche descremada (Vaso 200ml)": {"kcal": 90, "prot": 7, "unidad": "unidad"},
+    "Whey Protein (1 scoop)": {"kcal": 120, "prot": 24, "unidad": "unidad"},
+    
+    # CARBOHIDRATOS LIMPIOS Y LEGUMBRES
     "Papa o Batata hervida": {"kcal": 87, "prot": 2, "unidad": "100g"},
     "Calabaza/Zapallo al horno o puré": {"kcal": 30, "prot": 1, "unidad": "100g"},
     "Lentejas/Garbanzos/Porotos": {"kcal": 116, "prot": 9, "unidad": "100g"},
     "Quinoa cocida": {"kcal": 120, "prot": 4, "unidad": "100g"},
+    
+    # FRUTAS y VEGETALES
     "Mandarina (Unidad)": {"kcal": 45, "prot": 1, "unidad": "unidad"},
     "Banana (Unidad)": {"kcal": 105, "prot": 1, "unidad": "unidad"},
     "Manzana/Pera/Naranja (Unidad)": {"kcal": 60, "prot": 0.5, "unidad": "unidad"},
     "Brócoli/Zanahoria/Tomate/Zucchini": {"kcal": 30, "prot": 2, "unidad": "100g"},
     "Verduras de hoja (Lechuga/Acelga)": {"kcal": 15, "prot": 1, "unidad": "100g"},
-    "Whey Protein (1 scoop)": {"kcal": 120, "prot": 24, "unidad": "unidad"},
-    "Leche descremada (Vaso 200ml)": {"kcal": 90, "prot": 7, "unidad": "unidad"},
 }
 
 total_kcal_dia = 0
@@ -69,7 +79,7 @@ def procesar_bloque_comida(titulo_bloque, key_sufijo):
         for alimento in elegidos:
             info = base_alimentos[alimento]
             if info["unidad"] == "100g":
-                cantidad = st.number_input(f"Gramos de {alimento}:", min_value=0, value=150, step=50, key=f"{alimento}_{key_sufijo}")
+                cantidad = st.number_input(f"Gramos de {alimento}:", min_value=0, value=50 if "Queso" in alimento else 150, step=10 if "Queso" in alimento else 50, key=f"{alimento}_{key_sufijo}")
                 total_kcal_dia += (info["kcal"] * cantidad) / 100
                 total_prot_dia += (info["prot"] * cantidad) / 100
             else:
@@ -82,7 +92,7 @@ procesar_bloque_comida("📸 Almuerzo", "almuerzo")
 st.markdown("---")
 procesar_bloque_comida("🥛 Merienda", "merienda")
 st.markdown("---")
-procesar_bloque_comida("🥩 Cena", "cena")
+procesar_bloque_comida("📸 Cena", "cena")
 st.markdown("---")
 
 st.subheader("⚠️ Filtro de Reglas")
@@ -93,6 +103,7 @@ hora_cena = st.time_input("¿A qué hora terminás de cenar?", datetime.time(22,
 hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + datetime.timedelta(hours=14)).time()
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
+# 📊 BALANCE FINAL AUTOMÁTICO
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular Resultados de Hoy"):
     gasto_total = 1920 + kcal_pasos
@@ -120,3 +131,4 @@ if st.button("Calcular Resultados de Hoy"):
     if deficit > 1000 and sin_harina_azucar and total_prot_dia >= 85:
         st.balloons()
         st.success(f"🏆 ¡Día Perfecto registrado para el {fecha_seleccionada.strftime('%d/%m/%Y')}!")
+
