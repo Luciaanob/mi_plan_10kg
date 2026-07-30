@@ -5,13 +5,13 @@ import pandas as pd
 # Configuración de la página
 st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN
+# CREAR MEMORIA DE SESIÓN (Fija y persistente)
 if "historial_progreso" not in st.session_state:
     st.session_state["historial_progreso"] = []
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Analítico v9.5 | Tu Entrenador de Precisión IA")
+st.write("Versión Coach Analítico v10.0 | Tu Entrenador de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -42,7 +42,7 @@ else:
     bmr = 655.1 + (9.56 * peso_inicial) + (1.85 * (altura * 100)) - (4.68 * edad)
     deficit_ideal = 500  
 
-# LEYENDA MODIFICADA Y PULIDA A TU GUSTO
+# LEYENDA PULIDA DEL METABOLISMO
 st.info(f"🧬 **{nombre_usuario}**, tu cuerpo quema **{int(bmr)} kcal** al día **solo por existir, respirar y estar quieto en la cama**. ¡Esa es tu base antes de meter un solo paso! \n\n🎯 Para bajar esos 10kg cuidando tus músculos, tu déficit ideal recomendado es de **-{deficit_ideal} kcal** diarios.")
 
 # ==========================================
@@ -78,7 +78,7 @@ vasos_agua = st.slider("¿Cuántos vasos de agua (250ml) tomaste hoy?", 0, 12, 4
 st.markdown("---")
 
 # ==========================================
-# 5. 🥑 BASE DE DATOS COMPLETA DE ALIMENTOS RECUPERADA
+# 5. 🥑 BASE DE DATOS DE ALIMENTOS COMPLETA
 # ==========================================
 base_alimentos = {
     "Pollo (Pechuga/Muslo)": {"kcal": 165, "prot": 31, "unidad": "100g"},
@@ -105,7 +105,7 @@ total_kcal_dia = 0
 total_prot_dia = 0
 cantidades_totales = {}
 
-# Almuerzo (Recuperado completo)
+# Almuerzo
 st.subheader("📸 Almuerzo")
 almuerzo_elegidos = st.multiselect("¿Qué sumaste en tu almuerzo?", list(base_alimentos.keys()), key="select_almuerzo")
 for alimento in almuerzo_elegidos:
@@ -123,7 +123,7 @@ for alimento in almuerzo_elegidos:
 
 st.markdown("---")
 
-# RECUERDO DE MERIENDA COMPLETAMENTE DEVUELTO
+# Merienda RECUPERADA
 st.subheader("🥛 Merienda")
 merienda_elegidos = st.multiselect("¿Qué sumaste en tu merienda?", list(base_alimentos.keys()), key="select_merienda")
 for alimento in merienda_elegidos:
@@ -149,7 +149,7 @@ total_prot_dia += (frutas * 0.5)
 
 st.markdown("---")
 
-# Cena (Recuperada completa)
+# Cena
 st.subheader("📸 Cena")
 cena_elegidos = st.multiselect("¿Qué sumaste en tu cena?", list(base_alimentos.keys()), key="select_cena")
 for alimento in cena_elegidos:
@@ -172,12 +172,11 @@ sin_harina_azucar = st.checkbox("❌ Confirmo que comí CERO Harinas y Cero Azú
 
 st.header("⏱️ Control de Ayuno (14hs)")
 hora_cena = st.time_input("¿A qué hora terminás de cenar?", datetime.time(22, 0))
-# CORREGIDO EL ERROR DE .ti.me() DE TU ORIGINAL
 hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + datetime.timedelta(hours=14))
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE FINAL CON MEJORAS DE CÁLCULO
+# 6. 📊 BALANCE FINAL
 # ==========================================
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular y Registrar Día"):
@@ -202,3 +201,6 @@ if st.button("Calcular y Registrar Día"):
     
     st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
     st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
+    st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
+    
+    st.markdown("---")
