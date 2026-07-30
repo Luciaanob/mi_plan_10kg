@@ -11,7 +11,7 @@ if "historial_progreso" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Ultra Estable v14.1 | Tu Entrenador Personal de Precisión IA")
+st.write("Versión Ultra Estable v14.0 | Tu Entrenador Personal de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -71,7 +71,7 @@ pasos = st.number_input("¿Cuántos pasos hiciste hoy?", min_value=0, value=1400
 kcal_pasos = int(pasos * 0.055)
 
 st.subheader("💧 Control de Hidratación")
-vasos_agua = st.slider("¿Cuántos vasos de agua pura (250ml) tomaste hoy?", 0, 12, 4)
+vasos_agua = st.slider("¿Cuántos vasos de agua (250ml) tomaste hoy?", 0, 12, 4)
 st.markdown("---")
 
 # ==========================================
@@ -144,7 +144,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO 
+# 6. 📊 BALANCE DIARIO
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
@@ -158,7 +158,15 @@ st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
 st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
 
 if st.button("💾 Guardar y Comparar mi Día"):
-    nuevo_registro = {"Fecha": fecha_seleccionada.strftime('%d/%m/%Y'), "Usuario": nombre_usuario, "Peso (kg)": peso_actual, "Pasos": pasos, "Consumo (kcal)": int(total_kcal_dia), "Proteínas (g)": int(total_prot_dia), "Déficit (kcal)": int(deficit_real)}
+    nuevo_registro = {
+        "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
+        "Usuario": nombre_usuario,
+        "Peso (kg)": peso_actual,
+        "Pasos": pasos,
+        "Consumo (kcal)": int(total_kcal_dia),
+        "Proteínas (g)": int(total_prot_dia),
+        "Déficit (kcal)": int(deficit_real)
+    }
     st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_registro["Fecha"]]
     st.session_state["historial_progreso"].append(nuevo_registro)
     
@@ -166,14 +174,24 @@ if st.button("💾 Guardar y Comparar mi Día"):
     st.markdown("---")
     st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
     
-    # ALERTAS DE DEFICIT
-    if deficit_real > 1200: st.error(f"⚠️ ¡Cuidado {nombre_usuario}, estás comiendo muy poco! Hoy lograste un deficit de {int(deficit_real)} kcal. Te faltaron {int(calorias_faltantes)} kcal para tu meta ideal, que seria consumir {int(calorias_objetivo)} kcal en el día. ¡Mañana sumale volumen al plato con papa, batata o más carne magra!")
-    if deficit_real >= deficit_ideal and deficit_real <= 1200: st.success(f"🔥 ¡Excelente balance, {nombre_usuario}! Lograste un deficit de {int(deficit_real)} kcal. Estás en la zona perfecta. ¡Camino dorado!")
-    if deficit_real < deficit_ideal and deficit_real >= -500: st.warning(f"⚠️ A ajustar un poquito, {nombre_usuario}: Hoy el deficit se quedo corto respecto a tu meta de -{deficit_ideal} kcal. Mañana intentá controlar un pelín más las porciones.")
-    if deficit_real < -500: st.error(f"⚠️ Superavit Calórico Crítico: Tus calorías superaron por mucho tu gasto. ¡Mañana achicamos los platos!")
+    if deficit_real > 1200:
+        st.error(f"⚠️ ¡Cuidado {nombre_usuario}, estás comiendo muy poco! Hoy lograste un déficit de {int(deficit_real)} kcal. Te faltaron {int(calorias_faltantes)} kcal para tu meta ideal, que sería consumir {int(calorias_objetivo)} kcal en el día. ¡Mañana sumale volumen al plato con papa, batata o más carne magra!")
+    else:
+        st.success(f"🔥 ¡Excelente balance, {nombre_usuario}! Estás haciendo las cosas impecable.")
 
     st.markdown("---")
-    
-    # ALERTAS DE ALIMENTOS INDIVIDUALES
     if cantidades_totales.get("Huevo hervido (Unidad)", 0) > 3: st.error(f"🥚 Huevos ({int(cantidades_totales['Huevo hervido (Unidad)'])} unidades): Te sobrepasaste. Lo ideal son 2 o 3 unidades al día.")
-    if cantidades_totales.get("Pollo (Pechuga/Muslo)", 0) > 400: st.error(f"🥩 Pollo ({int(cantidades_totales['Pollo (Pechuga/Muslo)'])}g): Te excediste en la porción. Lo recomendado son 150g a 250g por comida.")
+    if not sin_harina_azucar: st.error(f"🚨 ¡Atención! Hoy se escapó alguna harina o azúcar. ¡Mañana volvemos al camino 100% limpio!")
+    else: st.success(f"✅ ¡Disciplina impecable! Mantuviste las harinas y azúcares en CERO absoluto hoy.")
+
+# ==========================================
+# 7. 🗂️ SECCIÓN DE COMPARACIÓN TOTALMENTE FIJA (A PRUEBA DE ERRORES)
+# ==========================================
+st.markdown("---")
+st.header("🗂️ Tabla de Comparación Semanal (Historial Diario)")
+st.write("Acá abajo vas a ver la lista de todos tus días guardados para comparar tu progreso:")
+
+# Muestra la tabla directamente convirtiendo la lista de sesión
+df_historial = pd.DataFrame(st.session_state["historial_progreso"])
+st.dataframe(df_historial)
+
