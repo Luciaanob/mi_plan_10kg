@@ -12,9 +12,9 @@ if "historial_progreso" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Base de Datos v12.0 | Guardado Permanente en la Nube")
+st.write("Versión Base de Datos v12.1 | Guardado Permanente en la Nube")
 
-# CONEXIÓN CORREGIDA: Fuerza la lectura directa del secreto para evitar el cartel rojo
+# CONEXIÓN DIRECTA
 try:
     url_sheet = st.secrets["connections"]["gsheets"]["spreadsheet"]
     conn = st.connection("gsheets", type=GSheetsConnection)
@@ -156,7 +156,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO E INFORME (AJUSTADO DIRECTO)
+# 6. 📊 BALANCE DIARIO E INFORME ULTRA PLANO
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
@@ -173,17 +173,16 @@ if st.button("💾 Guardar y Comparar mi Día en la NUBE"):
     nuevo_registro = pd.DataFrame([{"Fecha": fecha_seleccionada.strftime('%d/%m/%Y'), "Usuario": nombre_usuario, "Peso (kg)": peso_actual, "Pasos": pasos, "Consumo (kcal)": int(total_kcal_dia), "Proteínas (g)": int(total_prot_dia), "Déficit (kcal)": int(deficit_real)}])
     try:
         df_actualizado = pd.concat([df_historico_real, nuevo_registro]).drop_duplicates(subset=["Fecha"], keep="last")
-        # LLAMADA ULTRA DIRECTA CON LA URL EXTRAÍDA DIRECTAMENTE DE LOS SECRETS
         conn.update(spreadsheet=url_sheet, data=df_actualizado)
         st.success("📊 ¡Día guardado de forma PERMANENTE en tu planilla de Google Sheets!")
         st.balloons()
-    except Exception as e:
-        st.error(f"⚠️ Error en la conexión. Revisá que tu planilla de Google Sheets esté compartida como 'Editor' para cualquier persona con el enlace.")
+    except Exception:
+        st.error("⚠️ Error en la conexión. Revisá que tu planilla de Google Sheets esté compartida como 'Editor' para cualquier persona con el enlace.")
         
     st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
     st.markdown("---")
     st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
     
-    if deficit_real > 1200:
-        st.error(f"⚠️ ¡Cuidado {nombre_usuario}, estás comiendo muy poco! Hoy lograste un déficit tremendo de {int(deficit_real)} kcal. Te faltaron ingerir exactamente {int(calorias_faltantes)} kcal para alcanzar tu meta ideal de manera saludable, que sería consumir {int(calorias_objetivo)} kcal en el día. Cortar tanto la comida obliga a tu cuerpo a quemar músculo para aguantar los pasos. ¡Mañana sumale volumen al plato con papa, batata o más carne magra!")
-    if deficit_real >= deficit_ideal and deficit_real <= 1200:
+    # ESTRUCTURA CORRIDA ABSOLUTAMENTE REVISADA CONTRA INDENTACIONES
+    if deficit_real > 1200: st.error(f"⚠️ ¡Cuidado {nombre_usuario}, estás comiendo muy poco! Hoy lograste un déficit de {int(deficit_real)} kcal. Te faltaron {int(calorias_faltantes)} kcal para tu meta ideal, que sería consumir {int(calorias_objetivo)} kcal en el día. ¡Mañana sumale volumen limpio con papa, batata o más carne magra!")
+    if deficit_real >= deficit_ideal and deficit_real <= 1200: st.success(f"🔥 ¡Excelente balance, {nombre_usuario}! Lograste un déficit de {int(deficit_real)} kcal. Estás en la zona perfecta: quemando grasa a full pero dándole la energía necesaria. ¡Camino dorado!")
