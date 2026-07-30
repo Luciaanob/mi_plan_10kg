@@ -6,14 +6,18 @@ from streamlit_gsheets import GSheetsConnection
 # Configuración de la página
 st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
+# CREAR MEMORIA DE SESIÓN (Fija y persistente)
+if "historial_progreso" not in st.session_state:
+    st.session_state["historial_progreso"] = []
+
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Base de Datos v11.0 | Guardado Permanente y Comparación Semanal")
+st.write("Versión Base de Datos v11.1 | Guardado Permanente en la Nube")
 
-# Conexión automática con Google Sheets
+# Conexión automática con Google Sheets usando la configuración directa
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
-    df_historico_real = conn.read(ttl="0m") # Lee los datos guardados en vivo
+    df_historico_real = conn.read(ttl="0m")
 except Exception:
     df_historico_real = pd.DataFrame()
 
@@ -61,7 +65,7 @@ if kilos_bajados > 0:
 else:
     st.info(f"Punto de partida: {peso_inicial} kg. ¡Hoy arranca el cambio!")
 
-# Gráfico interactivo diario
+# Gráfico interactivo
 st.subheader("📉 Tu Curva de Descenso Histórica")
 if not df_historico_real.empty and "Peso (kg)" in df_historico_real.columns:
     st.line_chart(df_historico_real.set_index("Fecha")["Peso (kg)"])
@@ -82,7 +86,7 @@ vasos_agua = st.slider("¿Cuántos vasos de agua (250ml) tomaste hoy?", 0, 12, 4
 st.markdown("---")
 
 # ==========================================
-# 5. 🥑 BASE DE DATOS DE ALIMENTOS
+# 5. 🥑 BASE DE DATOS DE ALIMENTOS COMPLETA
 # ==========================================
 base_alimentos = {
     "Pollo (Pechuga/Muslo)": {"kcal": 165, "prot": 31, "unidad": "100g"},
@@ -151,7 +155,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO E INFORME
+# 6. 📊 BALANCE DIARIO E INFORME (MEJORADO ENLACE)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
@@ -164,7 +168,7 @@ meta_proteina = peso_actual * 1.2
 st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
 st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
 
-# BOTÓN DE GUARDADO PRINCIPAL EN LA NUBE PERMANENTE
+# NUEVO REPRODUCTOR DE GUARDADO LÓGICO DIRECTO
 if st.button("💾 Guardar y Comparar mi Día en la NUBE"):
     nuevo_registro = pd.DataFrame([{
         "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
@@ -176,13 +180,14 @@ if st.button("💾 Guardar y Comparar mi Día en la NUBE"):
         "Déficit (kcal)": int(deficit_real)
     }])
     
-    # Intenta actualizar la planilla de Google Sheets de forma permanente
     try:
         df_actualizado = pd.concat([df_historico_real, nuevo_registro]).drop_duplicates(subset=["Fecha"], keep="last")
-        conn.update(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet"], data=df_actualizado)
-        st.success("📊 ¡Día guardado de forma PERMANENTE en la Nube! Ya podés cerrar la app sin perder nada.")
+        # SE USA LA NUEVA CONFIGURACIÓN REPARADA DIRECTA
+        conn.update(data=df_actualizado)
+        st.success("📊 ¡Día guardado de forma PERMANENTE en tu planilla de Google Sheets!")
+        st.balloons()
     except Exception as e:
-        st.warning("⚠️ Los datos se calcularon pero la hoja de Google Sheets no está conectada todavía. Pasá al Paso 2.")
+        st.error(f"⚠️ Error en la conexión interna de Google. Revisá que en los Secrets diga [connections.gsheets] arriba de todo.")
 
     st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
     
@@ -190,5 +195,3 @@ if st.button("💾 Guardar y Comparar mi Día en la NUBE"):
     st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
     
     if deficit_real > 1200:
-        st.error(f"⚠️ **¡Cuidado {nombre_usuario}, estás comiendo muy poco!** Hoy lograste un déficit tremendo de {int(deficit_real)} kcal. Te faltaron ingerir exactamente **{int(calorias_faltantes)} kcal** para alcanzar tu meta ideal de manera saludable, que sería consumir **{int(calorias_objetivo)} kcal** en el día. Cortar tanto la comida obliga a tu cuerpo de {int(peso_actual)}kg a quemar masa muscular para aguantar los {pasos} pasos. \n\n💡 **Cómo solucionarlo:** ¡No dejes de comer! Mañana asegurate de sumarle a tus platos una buena porción de carbohidratos sanos (como **200g de papa o batata**) o un buen refuerzo de carne o pollo en la cena.")
-    
