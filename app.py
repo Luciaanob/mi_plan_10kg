@@ -11,7 +11,7 @@ if "historial_progreso" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Sincero v5.3 | Tu Entrenador Personal IA")
+st.write("Versión Coach Analítico v6.0 | Tu Entrenador de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -23,7 +23,7 @@ st.write(f"Hola **{nombre_usuario}**, registrando para el día: **{fecha_selecci
 st.markdown("---")
 
 # ==========================================
-# 2. 🧬 PERFIL CORPORAL ABIERTO POR DEFECTO (CORREGIDO)
+# 2. 🧬 PERFIL CORPORAL ABIERTO POR DEFECTO
 # ==========================================
 with st.expander(f"🧬 Perfil Corporal de {nombre_usuario}", expanded=True):
     col_p1, col_p2 = st.columns(2)
@@ -40,6 +40,8 @@ if genero == "Hombre":
 else:
     bmr = 655.1 + (9.56 * peso_inicial) + (1.85 * (altura * 100)) - (4.68 * edad)
     deficit_ideal = 500  
+
+st.info(f"🧬 Tu cuerpo quema **{int(bmr)} kcal** al día solo por existir (Metabolismo Basal).  \n🎯 Tu déficit ideal recomendado es de **-{deficit_ideal} kcal** diarios.")
 
 # ==========================================
 # 3. ⚖️ CONTROL DE PESO DIARIO Y PROGRESO
@@ -102,8 +104,11 @@ base_alimentos = {
 total_kcal_dia = 0
 total_prot_dia = 0
 
+# Diccionario interno para trackear cantidades totales de alimentos cargados hoy
+cantidades_totales = {}
+
 def procesar_bloque_comida(titulo_bloque, key_sufijo):
-    global total_kcal_dia, total_prot_dia
+    global total_kcal_dia, total_prot_dia, cantidades_totales
     st.subheader(titulo_bloque)
     elegidos = st.multiselect(f"¿Qué sumaste en tu {titulo_bloque.lower()}?", list(base_alimentos.keys()), key=f"select_{key_sufijo}")
     
@@ -114,10 +119,12 @@ def procesar_bloque_comida(titulo_bloque, key_sufijo):
                 cantidad = st.number_input(f"Gramos de {alimento}:", min_value=0, value=50 if "Queso" in alimento else 150, step=10 if "Queso" in alimento else 50, key=f"{alimento}_{key_sufijo}")
                 total_kcal_dia += (info["kcal"] * cantidad) / 100
                 total_prot_dia += (info["prot"] * cantidad) / 100
+                cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
             else:
                 cantidad = st.number_input(f"Unidades de {alimento}:", min_value=0, value=1, step=1, key=f"{alimento}_{key_sufijo}")
                 total_kcal_dia += info["kcal"] * cantidad
                 total_prot_dia += info["prot"] * cantidad
+                cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
 
 st.header("📝 Registro por Comidas")
 procesar_bloque_comida("📸 Almuerzo", "almuerzo")
@@ -143,7 +150,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE Y FUNCIÓN DE GUARDADO/DESCARGA
+# 6. 📊 BALANCE Y AUDITORÍA DE EXCESOS
 # ==========================================
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular y Registrar Día"):
@@ -167,35 +174,25 @@ if st.button("Calcular y Registrar Día"):
     st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
     
     st.markdown("---")
-    st.subheader(f"🤖 Recomendaciones de tu Coach IA para {nombre_usuario}:")
+    st.subheader(f"🤖 Análisis Específico del Coach IA para {nombre_usuario}:")
     
-    if deficit_real > 1200:
-        st.error(f"🚨 **¡Cuidado, {nombre_usuario}! El déficit es peligrosamente alto ({int(deficit_real)} kcal).**  \nEsto suele pasar porque comiste extremadamente poco hoy o por un error al cargar las cantidades de comida. ¡Mañana asegurate de comer buen volumen de comida limpia!")
-    elif deficit_real >= deficit_ideal:
-        st.success(f"🔥 ¡Espectacular! Lograste un déficit de {int(deficit_real)} kcal, cumpliendo tu meta ideal de -{deficit_ideal} kcal.")
-    else:
-        st.warning(f"⚠️ Hoy tu déficit fue menor al ideal recomendado. Intentá ajustar un poco más las porciones mañana.")
-
-    if not sin_harina_azucar:
-        st.error(f"⚠️ **Reglas:** Hoy se escapó alguna harina o azúcar. ¡Mañana volvemos al camino limpio!")
-    else:
-        st.success(f"✅ **Reglas:** Mantuviste las harinas y azúcares en CERO absoluto.")
-
-    meta_proteina = peso_actual * 1.2
-    if total_prot_dia < meta_proteina:
-        st.warning(f"🍗 **Proteína baja:** Llegaste a {int(total_prot_dia)}g. Tu cuerpo te pide {int(meta_proteina)}g. Mañana reforzá sumando carnes, huevos o Whey Protein.")
-
-# MOSTRAR HISTORIAL
-if st.session_state["historial_progreso"]:
-    st.markdown("---")
-    st.header("🗂️ Historial Guardado (Esta Sesión)")
-    df_historial = pd.DataFrame(st.session_state["historial_progreso"])
-    st.dataframe(df_historial)
+    # NUEVA SECCIÓN: AUDITORÍA ESPECÍFICA DE EXCESOS (Respuesta al requerimiento de Luciano)
+    excesos_detectados = []
     
-    csv = df_historial.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="📥 Descargar todo mi Historial (.csv)",
-        data=csv,
-        file_name=f"historial_peso_{nombre_usuario}.csv",
-        mime="text/csv",
-    )
+    # Alerta Huevos
+    if cantidades_totales.get("Huevo hervido (Unidad)", 0) > 3:
+        cant = cantidades_totales["Huevo hervido (Unidad)"]
+        excesos_detectados.append(f"🥚 **Huevos ({int(cant)} unidades):** Te sobrepasaste en la porción. Deberías haber comido entre **2 y 3 unidades** como máximo en el día. Ingerir tantos de golpe satura tu digestión innecesariamente.")
+    
+    # Alerta Carnes (Pollo, Vaca, Cerdo)
+    for carne in ["Pollo (Pechuga/Muslo)", "Carne de Vaca (Cortes magros)", "Carne de Cerdo (Costillita/Bondiola)"]:
+        if cantidades_totales.get(carne, 0) > 400:
+            cant = cantidades_totales[carne]
+            excesos_detectados.append(f"🥩 **{carne} ({int(cant)}g):** Te excediste con el tamaño de la porción. Comer más de 400g de carne en un día aporta un pico proteico que tu cuerpo no llega a asimilar del todo y se puede acumular. Tu porción ideal para tus 96kg sería de **150g a 250g** por comida.")
+            
+    # Alerta Quesos Pesados
+    if cantidades_totales.get("Queso Cremoso / Por Salut / Mozzarella", 0) > 150 or cantidades_totales.get("Queso Rallado / Reggianito / Hebras", 0) > 80:
+        excesos_detectados.append(f"🧀 **Quesos:** Te pasaste con la cantidad de lácteos grasos. Los quesos son ricos pero densos. Deberías limitar el queso rallado a solo espolvorear (**15g a 30g**) y el cremoso a una feta (**30g a 50g**). El exceso suma calorías ocultas gigantes.")
+
+    # Alerta Frutas
+    if frutas > 3:
