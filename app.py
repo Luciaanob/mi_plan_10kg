@@ -5,13 +5,13 @@ import pandas as pd
 # Configuración de la página
 st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN (Persistente para guardar y comparar)
+# CREAR MEMORIA DE SESIÓN (Fija y persistente para comparar)
 if "historial_progreso" not in st.session_state:
     st.session_state["historial_progreso"] = []
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Premium v10.1 | Seguimiento, Guardado y Comparación")
+st.write("Versión Coach Premium v10.2 | Seguimiento, Guardado y Comparación")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -105,66 +105,37 @@ total_kcal_dia = 0
 total_prot_dia = 0
 cantidades_totales = {}
 
-# Almuerzo
-st.subheader("📸 Almuerzo")
-almuerzo_elegidos = st.multiselect("¿Qué sumaste en tu almuerzo?", list(base_alimentos.keys()), key="select_almuerzo")
-for alimento in almuerzo_elegidos:
-    info = base_alimentos[alimento]
-    if info["unidad"] == "100g":
-        cantidad = st.number_input(f"Gramos de {alimento} (Almuerzo):", min_value=0, value=50 if "Queso" in alimento else 150, step=10, key=f"{alimento}_alm")
-        total_kcal_dia += (info["kcal"] * cantidad) / 100
-        total_prot_dia += (info["prot"] * cantidad) / 100
-        cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
-    else:
-        cantidad = st.number_input(f"Unidades de {alimento} (Almuerzo):", min_value=0, value=1, step=1, key=f"{alimento}_alm")
-        total_kcal_dia += info["kcal"] * cantidad
-        total_prot_dia += info["prot"] * cantidad
-        cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
+def procesar_bloque_comida(titulo_bloque, key_sufijo):
+    global total_kcal_dia, total_prot_dia, cantidades_totales
+    st.subheader(titulo_bloque)
+    elegidos = st.multiselect(f"¿Qué sumaste en tu {titulo_bloque.lower()}?", list(base_alimentos.keys()), key=f"select_{key_sufijo}")
+    
+    if elegidos:
+        for alimento in elegidos:
+            info = base_alimentos[alimento]
+            if info["unidad"] == "100g":
+                cantidad = st.number_input(f"Gramos de {alimento} ({titulo_bloque}):", min_value=0, value=50 if "Queso" in alimento else 150, step=10, key=f"{alimento}_{key_sufijo}")
+                total_kcal_dia += (info["kcal"] * cantidad) / 100
+                total_prot_dia += (info["prot"] * cantidad) / 100
+                cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
+            else:
+                cantidad = st.number_input(f"Unidades de {alimento} ({titulo_bloque}):", min_value=0, value=1, step=1, key=f"{alimento}_{key_sufijo}")
+                total_kcal_dia += info["kcal"] * cantidad
+                total_prot_dia += info["prot"] * cantidad
+                cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
 
+procesar_bloque_comida("📸 Almuerzo", "almuerzo")
+st.markdown("---")
+procesar_bloque_comida("🥛 Merienda", "merienda")
 st.markdown("---")
 
-# Merienda
-st.subheader("🥛 Merienda")
-merienda_elegidos = st.multiselect("¿Qué sumaste en tu merienda?", list(base_alimentos.keys()), key="select_merienda")
-for alimento in merienda_elegidos:
-    info = base_alimentos[alimento]
-    if info["unidad"] == "100g":
-        cantidad = st.number_input(f"Gramos de {alimento} (Merienda):", min_value=0, value=50 if "Queso" in alimento else 150, step=10, key=f"{alimento}_mer")
-        total_kcal_dia += (info["kcal"] * cantidad) / 100
-        total_prot_dia += (info["prot"] * cantidad) / 100
-        cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
-    else:
-        cantidad = st.number_input(f"Unidades de {alimento} (Merienda):", min_value=0, value=1, step=1, key=f"{alimento}_mer")
-        total_kcal_dia += info["kcal"] * cantidad
-        total_prot_dia += info["prot"] * cantidad
-        cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
-
-st.markdown("---")
-
-# Registro Frutas
 st.subheader("🍎 Registro de Frutas")
 frutas = st.number_input("¿Cuántas frutas enteras comiste hoy?", min_value=0, value=0, step=1)
 total_kcal_dia += (frutas * 60)
 total_prot_dia += (frutas * 0.5)
-
 st.markdown("---")
 
-# Cena
-st.subheader("📸 Cena")
-cena_elegidos = st.multiselect("¿Qué sumaste en tu cena?", list(base_alimentos.keys()), key="select_cena")
-for alimento in cena_elegidos:
-    info = base_alimentos[alimento]
-    if info["unidad"] == "100g":
-        cantidad = st.number_input(f"Gramos de {alimento} (Cena):", min_value=0, value=50 if "Queso" in alimento else 150, step=10, key=f"{alimento}_cen")
-        total_kcal_dia += (info["kcal"] * cantidad) / 100
-        total_prot_dia += (info["prot"] * cantidad) / 100
-        cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
-    else:
-        cantidad = st.number_input(f"Unidades de {alimento} (Cena):", min_value=0, value=1, step=1, key=f"{alimento}_cen")
-        total_kcal_dia += info["kcal"] * cantidad
-        total_prot_dia += info["prot"] * cantidad
-        cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
-
+procesar_bloque_comida("📸 Cena", "cena")
 st.markdown("---")
 
 st.subheader("⚠️ Filtro de Reglas")
@@ -176,19 +147,22 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE FINAL CON RECOMENDACIONES PRECISAS Y BOTÓN MODIFICADO
+# 6. 📊 BALANCE DIARIO E INFORMES EN PANTALLA
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
-# NOMBRE DEL BOTÓN MODIFICADO A TU GUSTO
+# Cálculo constante fuera del botón para que se actualicen las métricas base
+gasto_total = int(bmr) + kcal_pasos
+deficit_real = gasto_total - total_kcal_dia
+calorias_objetivo = gasto_total - deficit_ideal
+calorias_faltantes = deficit_real - deficit_ideal
+meta_proteina = peso_actual * 1.2
+
+st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
+st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
+
+# BOTÓN DE GUARDADO PRINCIPAL
 if st.button("💾 Guardar y Comparar mi Día"):
-    gasto_total = int(bmr) + kcal_pasos
-    deficit_real = gasto_total - total_kcal_dia
-    calorias_objetivo = gasto_total - deficit_ideal
-    calorias_faltantes = deficit_real - deficit_ideal
-    meta_proteina = peso_actual * 1.2
-    
-    # GUARDAR SÍ O SÍ EN EL HISTORIAL AL TOCAR EL BOTÓN
     nuevo_registro = {
         "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
         "Usuario": nombre_usuario,
@@ -201,5 +175,20 @@ if st.button("💾 Guardar y Comparar mi Día"):
     st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_registro["Fecha"]]
     st.session_state["historial_progreso"].append(nuevo_registro)
     
-    st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
-    st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
+    st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
+    
+    st.markdown("---")
+    st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
+    
+    if deficit_real > 1200:
+        st.error(f"⚠️ **¡Cuidado {nombre_usuario}, estás comiendo muy poco!** Hoy lograste un déficit tremendo de {int(deficit_real)} kcal. Te faltaron ingerir exactamente **{int(calorias_faltantes)} kcal** para alcanzar tu meta ideal de manera saludable, que sería consumir **{int(calorias_objetivo)} kcal** en el día. Cortar tanto la comida obliga a tu cuerpo de {int(peso_actual)}kg a quemar masa muscular para aguantar los {pasos} pasos. \n\n💡 **Cómo solucionarlo:** ¡No dejes de comer! Mañana asegurate de sumarle a tus platos una buena porción de carbohidratos sanos (como **200g de papa o batata**) o un buen refuerzo de carne o pollo en la cena.")
+    
+    if deficit_real >= deficit_ideal and deficit_real <= 1200:
+        st.success(f"🔥 **¡Excelente balance, {nombre_usuario}!** Lograste un déficit de {int(deficit_real)} kcal. Estás en la zona perfecta. ¡Camino dorado!")
+    
+    if deficit_real < deficit_ideal and deficit_real >= -500:
+        st.warning(f"⚠️ **A ajustar un poquito, {nombre_usuario}:** Hoy el déficit se quedó corto respecto a tu meta de -{deficit_ideal} kcal. Mañana intentá controlar un pelín más las porciones.")
+        
+    if deficit_real < -500:
+        st.error(f"⚠️ **Superávit Calórico Crítico:** Tus calorías superaron por mucho tu gasto. ¡Mañana achicamos los platos!")
+
