@@ -7,16 +7,31 @@ st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", l
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Premium v2.1 | 96kg Inicial | 14.000 pasos | Cero Harinas")
+st.write("Versión Científica v3.0 | Cálculo de Déficit Personalizado")
 
-# 📅 CALENDARIO
-st.header("📅 Seleccionar Fecha")
-fecha_seleccionada = st.date_input("¿Qué día querés registrar?", datetime.date.today())
+# 🧬 CONFIGURACIÓN DE TIPO DE CUERPO Y PERFIL
+st.header("🧬 Perfil Corporal")
+col_p1, col_p2 = st.columns(2)
 
-# ⚖️ CONTROL DE PESO DIARIO Y GRÁFICO
-st.header("⚖️ Control de Peso")
-peso_actual = st.number_input("Ingresá tu peso de hoy (kg):", min_value=50.0, max_value=150.0, value=96.0, step=0.1)
+with col_p1:
+    genero = st.radio("Seleccioná tu género:", ("Hombre", "Mujer"))
+    peso_actual = st.number_input("Ingresá tu peso actual (kg):", min_value=40.0, max_value=200.0, value=96.0, step=0.1)
 
+with col_p2:
+    altura = st.number_input("Ingresá tu altura (metros):", min_value=1.20, max_value=2.30, value=1.77, step=0.01)
+    edad = st.number_input("Ingresá tu edad:", min_value=15, max_value=100, value=30, step=1)
+
+# 🧠 CÁLCULO CIENTÍFICO AUTOMÁTICO (Fórmula Harris-Benedict)
+if genero == "Hombre":
+    bmr = 66.47 + (13.75 * peso_actual) + (5.00 * (altura * 100)) - (6.75 * edad)
+    deficit_ideal = 700  # Un déficit de 700 kcal es óptimo y seguro para un hombre activo de tu contextura
+else:
+    bmr = 655.1 + (9.56 * peso_actual) + (1.85 * (altura * 100)) - (4.68 * edad)
+    deficit_ideal = 500  # Las mujeres manejan mejor un déficit de 500 kcal para proteger el sistema hormonal
+
+st.info(f"🧬 Tu cuerpo quema **{int(bmr)} kcal** al día solo por existir (Metabolismo Basal).  \n🎯 Tu déficit ideal recomendado es de **-{deficit_ideal} kcal** diarios.")
+
+# ⚖️ BARRA DE PROGRESO DE PESO
 peso_inicial = 96.0
 meta_peso = 86.0
 kilos_bajados = peso_inicial - peso_actual
@@ -28,9 +43,9 @@ if kilos_bajados > 0:
 elif kilos_bajados == 0:
     st.info("Punto de partida: 96 kg. ¡Hoy arranca el cambio!")
 else:
-    st.warning("Mantené la calma y seguí firme con el déficit, el peso fluctúa por agua.")
+    st.warning("Mantené la calma, el peso fluctúa por retención de agua. ¡Seguí firme!")
 
-# Gráfico de peso
+# Gráfico de peso interactivo
 st.subheader("📉 Tu Curva de Descenso")
 datos_peso = pd.DataFrame({
     "Días": ["Inicio", "Actual"],
@@ -38,18 +53,16 @@ datos_peso = pd.DataFrame({
 })
 st.line_chart(datos_peso.set_index("Días"))
 
-# 🚶‍♂️ PASOS
-st.header("🚶‍♂️ Tus 14.000 Pasos")
+# 📅 CALENDARIO Y PASOS
+st.header("📅 Registro del Día")
+fecha_seleccionada = st.date_input("¿Qué día querés registrar?", datetime.date.today())
+
 pasos = st.number_input("¿Cuántos pasos hiciste hoy?", min_value=0, value=14000, step=500)
 kcal_pasos = int(pasos * 0.055)
 
 # 💧 CONTROL DE HIDRATACIÓN
-st.header("💧 Control de Hidratación")
+st.subheader("💧 Control de Hidratación")
 vasos_agua = st.slider("¿Cuántos vasos de agua pura (250ml) tomaste hoy?", 0, 12, 4)
-if vasos_agua < 8:
-    st.warning("⚠️ Intentá llegar a 8 vasos diarios para limpiar tu organismo y rendir más al caminar.")
-else:
-    st.success("😎 ¡Excelente nivel de hidratación para tus riñones!")
 
 # 🥑 BASE DE DATOS DE ALIMENTOS
 base_alimentos = {
@@ -98,10 +111,9 @@ st.markdown("---")
 procesar_bloque_comida("🥛 Merienda", "merienda")
 st.markdown("---")
 
-# 🍎 SECCIÓN CORREGIDA: CONTADOR GENERAL DE FRUTAS
 st.subheader("🍎 Registro de Frutas")
-frutas = st.number_input("¿Cuántas frutas enteras comiste hoy? (Mandarinas, manzanas, etc.)", min_value=0, value=0, step=1)
-total_kcal_dia += (frutas * 60) # Promedio de calorías por fruta común
+frutas = st.number_input("¿Cuántas frutas enteras comiste hoy?", min_value=0, value=0, step=1)
+total_kcal_dia += (frutas * 60)
 total_prot_dia += (frutas * 0.5)
 st.markdown("---")
 
@@ -116,11 +128,11 @@ hora_cena = st.time_input("¿A qué hora terminás de cenar?", datetime.time(22,
 hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + datetime.timedelta(hours=14)).time()
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
-# 📊 BALANCE FINAL AUTOMÁTICO
+# 📊 BALANCE FINAL AUTOMÁTICO CON DATOS DE PERFIL
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular Resultados de Hoy"):
-    gasto_total = 1920 + kcal_pasos
-    deficit = gasto_total - total_kcal_dia
+    gasto_total = int(bmr) + kcal_pasos
+    deficit_real = gasto_total - total_kcal_dia
     
     col_a, col_b = st.columns(2)
     with col_a:
@@ -128,17 +140,22 @@ if st.button("Calcular Resultados de Hoy"):
         st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
     with col_b:
         st.metric(label="Gasto Diario Total", value=f"{gasto_total} kcal")
-        st.metric(label="Déficit Logrado", value=f"{int(deficit)} kcal", delta=f"{int(deficit)} kcal")
+        st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
     
     st.subheader("💡 Análisis de tu IA:")
-    if total_prot_dia < 85:
-        st.warning(f"⚠️ Estás bajo en proteínas ({int(total_prot_dia)}g). Recordá cuidar el músculo.")
+    st.write(f"🎯 Tu meta de déficit ideal es de: **{deficit_ideal} kcal**.")
+    
+    # Análisis comparativo automático
+    if deficit_real >= deficit_ideal:
+        st.success(f"🔥 ¡Espectacular! Lograste un déficit de {int(deficit_real)} kcal, superando tu meta ideal de {deficit_ideal} kcal. Vas a bajar de peso seguro.")
     else:
-        st.success("💪 ¡Nivel de proteína espectacular! Tus músculos están blindados.")
+        st.warning(f"⚠️ Hoy tu déficit fue de {int(deficit_real)} kcal (menor al ideal de {deficit_ideal} kcal). Intentá ajustar las porciones o meter más pasos mañana.")
         
-    if frutas > 4:
-        st.warning("⚠️ Recordá que aunque las frutas sean sanas, comer más de 4 unidades al día suma azúcares naturales que pueden recortar tu déficit.")
+    if total_prot_dia < (peso_actual * 1.2):
+        st.warning(f"⚠️ Estás bajo en proteínas ({int(total_prot_dia)}g). Intentá subir el consumo de carnes o huevos para proteger tu masa muscular.")
+    else:
+        st.success("💪 ¡Nivel de proteína óptimo! Tus músculos están blindados según tu tipo de cuerpo.")
         
-    if deficit > 1000 and sin_harina_azucar and total_prot_dia >= 85:
+    if deficit_real >= deficit_ideal and sin_harina_azucar and total_prot_dia >= (peso_actual * 1.2):
         st.balloons()
-        st.success(f"🏆 ¡Día Perfecto registrado para el {fecha_seleccionada.strftime('%d/%m/%Y')}! Estás quemando grasa a ritmo máximo.")
+        st.success(f"🏆 ¡Día Perfecto de Recomposición registrado para el {fecha_seleccionada.strftime('%d/%m/%Y')}!")
