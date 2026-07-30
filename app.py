@@ -7,7 +7,7 @@ st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", l
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Científica v3.0 | Cálculo de Déficit Personalizado")
+st.write("Versión Universal | Cálculo de Déficit Personalizado")
 
 # 🧬 CONFIGURACIÓN DE TIPO DE CUERPO Y PERFIL
 st.header("🧬 Perfil Corporal")
@@ -15,7 +15,8 @@ col_p1, col_p2 = st.columns(2)
 
 with col_p1:
     genero = st.radio("Seleccioná tu género:", ("Hombre", "Mujer"))
-    peso_actual = st.number_input("Ingresá tu peso actual (kg):", min_value=40.0, max_value=200.0, value=96.0, step=0.1)
+    peso_inicial = st.number_input("¿Cuánto pesabas el primer día? (Peso Inicial):", min_value=40.0, max_value=200.0, value=96.0, step=0.1)
+    peso_actual = st.number_input("Ingresá tu peso de hoy (kg):", min_value=40.0, max_value=200.0, value=96.0, step=0.1)
 
 with col_p2:
     altura = st.number_input("Ingresá tu altura (metros):", min_value=1.20, max_value=2.30, value=1.77, step=0.01)
@@ -24,28 +25,27 @@ with col_p2:
 # 🧠 CÁLCULO CIENTÍFICO AUTOMÁTICO (Fórmula Harris-Benedict)
 if genero == "Hombre":
     bmr = 66.47 + (13.75 * peso_actual) + (5.00 * (altura * 100)) - (6.75 * edad)
-    deficit_ideal = 700  # Un déficit de 700 kcal es óptimo y seguro para un hombre activo de tu contextura
+    deficit_ideal = 700  
 else:
     bmr = 655.1 + (9.56 * peso_actual) + (1.85 * (altura * 100)) - (4.68 * edad)
-    deficit_ideal = 500  # Las mujeres manejan mejor un déficit de 500 kcal para proteger el sistema hormonal
+    deficit_ideal = 500  
 
 st.info(f"🧬 Tu cuerpo quema **{int(bmr)} kcal** al día solo por existir (Metabolismo Basal).  \n🎯 Tu déficit ideal recomendado es de **-{deficit_ideal} kcal** diarios.")
 
-# ⚖️ BARRA DE PROGRESO DE PESO
-peso_inicial = 96.0
-meta_peso = 86.0
+# ⚖️ BARRA DE PROGRESO DE PESO UNIVERSAL
+meta_peso = peso_inicial - 10.0
 kilos_bajados = peso_inicial - peso_actual
 
 if kilos_bajados > 0:
     st.success(f"🎉 ¡Ya bajaste **{kilos_bajados:.1f} kg** desde que empezaste!")
     st.progress(min(kilos_bajados / 10.0, 1.0))
-    st.write(f"Te faltan **{peso_actual - meta_peso:.1f} kg** para tu meta final de 86 kg.")
+    st.write(f"Te faltan **{peso_actual - meta_peso:.1f} kg** para tu meta final de {meta_peso:.1f} kg.")
 elif kilos_bajados == 0:
-    st.info("Punto de partida: 96 kg. ¡Hoy arranca el cambio!")
+    st.info(f"Punto de partida: {peso_inicial} kg. ¡Hoy arranca el cambio!")
 else:
     st.warning("Mantené la calma, el peso fluctúa por retención de agua. ¡Seguí firme!")
 
-# Gráfico de peso interactivo
+# Gráfico de peso interactivo adaptado
 st.subheader("📉 Tu Curva de Descenso")
 datos_peso = pd.DataFrame({
     "Días": ["Inicio", "Actual"],
@@ -101,7 +101,8 @@ def procesar_bloque_comida(titulo_bloque, key_sufijo):
                 total_kcal_dia += (info["kcal"] * cantidad) / 100
                 total_prot_dia += (info["prot"] * cantidad) / 100
             else:
-                cantidad = st.number_input(f"Unidades de {alimento}:", min_value=0, value=1, step=1, key=f"{alimento}_{key_sufijo}")
+                character_id = f"{alimento}_{key_sufijo}"
+                cantidad = st.number_input(f"Unidades de {alimento}:", min_value=0, value=1, step=1, key=character_id)
                 total_kcal_dia += info["kcal"] * cantidad
                 total_prot_dia += info["prot"] * cantidad
 
@@ -128,7 +129,7 @@ hora_cena = st.time_input("¿A qué hora terminás de cenar?", datetime.time(22,
 hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + datetime.timedelta(hours=14)).time()
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
-# 📊 BALANCE FINAL AUTOMÁTICO CON DATOS DE PERFIL
+# 📊 BALANCE FINAL AUTOMÁTICO
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular Resultados de Hoy"):
     gasto_total = int(bmr) + kcal_pasos
@@ -145,11 +146,10 @@ if st.button("Calcular Resultados de Hoy"):
     st.subheader("💡 Análisis de tu IA:")
     st.write(f"🎯 Tu meta de déficit ideal es de: **{deficit_ideal} kcal**.")
     
-    # Análisis comparativo automático
     if deficit_real >= deficit_ideal:
-        st.success(f"🔥 ¡Espectacular! Lograste un déficit de {int(deficit_real)} kcal, superando tu meta ideal de {deficit_ideal} kcal. Vas a bajar de peso seguro.")
+        st.success(f"🔥 ¡Espectacular! Lograste un déficit de {int(deficit_real)} kcal, superando tu meta ideal de {deficit_ideal} kcal.")
     else:
-        st.warning(f"⚠️ Hoy tu déficit fue de {int(deficit_real)} kcal (menor al ideal de {deficit_ideal} kcal). Intentá ajustar las porciones o meter más pasos mañana.")
+        st.warning(f"⚠️ Hoy tu déficit fue de {int(deficit_real)} kcal (menor al ideal de {deficit_ideal} kcal).")
         
     if total_prot_dia < (peso_actual * 1.2):
         st.warning(f"⚠️ Estás bajo en proteínas ({int(total_prot_dia)}g). Intentá subir el consumo de carnes o huevos para proteger tu masa muscular.")
@@ -159,3 +159,4 @@ if st.button("Calcular Resultados de Hoy"):
     if deficit_real >= deficit_ideal and sin_harina_azucar and total_prot_dia >= (peso_actual * 1.2):
         st.balloons()
         st.success(f"🏆 ¡Día Perfecto de Recomposición registrado para el {fecha_seleccionada.strftime('%d/%m/%Y')}!")
+
