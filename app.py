@@ -1,26 +1,17 @@
 import streamlit as st
 import datetime
 import pandas as pd
-from streamlit_gsheets import GSheetsConnection
 
 # Configuración de la página
 st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN
+# CREAR MEMORIA DE SESIÓN (Local, estable y sin fallas de internet)
 if "historial_progreso" not in st.session_state:
     st.session_state["historial_progreso"] = []
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Base de Datos v12.1 | Guardado Permanente en la Nube")
-
-# CONEXIÓN DIRECTA
-try:
-    url_sheet = st.secrets["connections"]["gsheets"]["spreadsheet"]
-    conn = st.connection("gsheets", type=GSheetsConnection)
-    df_historico_real = conn.read(spreadsheet=url_sheet, ttl="0m")
-except Exception:
-    df_historico_real = pd.DataFrame()
+st.write("Versión Ultra Estable v13.0 | Tu Entrenador Personal de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -68,11 +59,8 @@ else:
 
 # Gráfico interactivo
 st.subheader("📉 Tu Curva de Descenso Histórica")
-if not df_historico_real.empty and "Peso (kg)" in df_historico_real.columns:
-    st.line_chart(df_historico_real.set_index("Fecha")["Peso (kg)"])
-else:
-    datos_peso = pd.DataFrame({"Días": ["Inicio", "Actual"], "Peso (kg)": [peso_inicial, peso_actual]})
-    st.line_chart(datos_peso.set_index("Días"))
+datos_peso = pd.DataFrame({"Días": ["Inicio", "Actual"], "Peso (kg)": [peso_inicial, peso_actual]})
+st.line_chart(datos_peso.set_index("Días"))
 st.markdown("---")
 
 # ==========================================
@@ -144,7 +132,7 @@ total_kcal_dia += (frutas * 60)
 total_prot_dia += (frutas * 0.5)
 st.markdown("---")
 
-procesar_bloque_comida("📸 Cena", "cena")
+**_** = procesar_bloque_comida("📸 Cena", "cena")
 st.markdown("---")
 
 st.subheader("⚠️ Filtro de Reglas")
@@ -156,7 +144,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO E INFORME ULTRA PLANO
+# 6. 📊 BALANCE DIARIO (FUNCIONAMIENTO LOCAL GARANTIZADO)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
@@ -169,20 +157,21 @@ meta_proteina = peso_actual * 1.2
 st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
 st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
 
-if st.button("💾 Guardar y Comparar mi Día en la NUBE"):
-    nuevo_registro = pd.DataFrame([{"Fecha": fecha_seleccionada.strftime('%d/%m/%Y'), "Usuario": nombre_usuario, "Peso (kg)": peso_actual, "Pasos": pasos, "Consumo (kcal)": int(total_kcal_dia), "Proteínas (g)": int(total_prot_dia), "Déficit (kcal)": int(deficit_real)}])
-    try:
-        df_actualizado = pd.concat([df_historico_real, nuevo_registro]).drop_duplicates(subset=["Fecha"], keep="last")
-        conn.update(spreadsheet=url_sheet, data=df_actualizado)
-        st.success("📊 ¡Día guardado de forma PERMANENTE en tu planilla de Google Sheets!")
-        st.balloons()
-    except Exception:
-        st.error("⚠️ Error en la conexión. Revisá que tu planilla de Google Sheets esté compartida como 'Editor' para cualquier persona con el enlace.")
-        
+if st.button("💾 Guardar y Comparar mi Día"):
+    # Guardado local seguro en la memoria de la pantalla
+    nuevo_registro = {"Fecha": fecha_seleccionada.strftime('%d/%m/%Y'), "Usuario": nombre_usuario, "Peso (kg)": peso_actual, "Pasos": pasos, "Consumo (kcal)": int(total_kcal_dia), "Proteínas (g)": int(total_prot_dia), "Déficit (kcal)": int(deficit_real)}
+    st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_registro["Fecha"]]
+    st.session_state["historial_progreso"].append(nuevo_registro)
+    
     st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
     st.markdown("---")
     st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
     
-    # ESTRUCTURA CORRIDA ABSOLUTAMENTE REVISADA CONTRA INDENTACIONES
     if deficit_real > 1200: st.error(f"⚠️ ¡Cuidado {nombre_usuario}, estás comiendo muy poco! Hoy lograste un déficit de {int(deficit_real)} kcal. Te faltaron {int(calorias_faltantes)} kcal para tu meta ideal, que sería consumir {int(calorias_objetivo)} kcal en el día. ¡Mañana sumale volumen limpio con papa, batata o más carne magra!")
-    if deficit_real >= deficit_ideal and deficit_real <= 1200: st.success(f"🔥 ¡Excelente balance, {nombre_usuario}! Lograste un déficit de {int(deficit_real)} kcal. Estás en la zona perfecta: quemando grasa a full pero dándole la energía necesaria. ¡Camino dorado!")
+    if deficit_real >= deficit_ideal and deficit_real <= 1200: st.success(f"🔥 ¡Excelente balance, {nombre_usuario}! Lograste un déficit de {int(deficit_real)} kcal. Estás en la zona perfecta. ¡Camino dorado!")
+    if deficit_real < deficit_ideal and deficit_real >= -500: st.warning(f"⚠️ A ajustar un poquito, {nombre_usuario}: Hoy el déficit se quedó corto respecto a tu meta de -{deficit_ideal} kcal. Mañana intentá controlar un pelín más las porciones.")
+    if deficit_real < -500: st.error(f"⚠️ Superávit Calórico Crítico: Tus calorías superaron por mucho tu gasto. ¡Mañana achicamos los platos!")
+
+    st.markdown("---")
+    if cantidades_totales.get("Huevo hervido (Unidad)", 0) > 3: st.error(f"🥚 Huevos ({int(cantidades_totales['Huevo hervido (Unidad)'])} unidades): Te sobrepasaste. Lo ideal son 2 o 3 unidades al día.")
+    for carne in ["Pollo (Pechuga/Muslo)", "Carne de Vaca (Cortes magros)", "Carne de Cerdo (Costillita/Bondiola)"]:
