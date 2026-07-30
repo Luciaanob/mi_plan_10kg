@@ -3,24 +3,24 @@ import datetime
 import pandas as pd
 
 # Configuración de la página
-st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
-
-# TÍTULO PERSONALIZADO
-st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Ultimate Coach v4.2 | Tu Entrenador Personal IA")
+st.set_page_config(page_title="Mi Tracker Personal - Meta -10kg", page_icon="💪", layout="centered")
 
 # ==========================================
-# 1. 📅 SECCIÓN MAESTRA: CALENDARIO (CORREGIDO ARRIBA)
+# 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE (ARRIBA)
 # ==========================================
-st.header("📅 Fecha de Registro")
+st.header("📅 Identificación y Fecha")
+
+# NUEVO: Entrada para nombre, apellido o apodo
+nombre_usuario = st.text_input("¿Cómo querés que te llame la app? (Nombre, Apellido o Apodo):", value="Luciano Bravo")
+
 fecha_seleccionada = st.date_input("¿Qué día querés registrar o revisar?", datetime.date.today())
-st.write(f"Registrando datos para el día: **{fecha_seleccionada.strftime('%d/%m/%Y')}**")
+st.write(f"Hola **{nombre_usuario}**, registrando datos para el día: **{fecha_seleccionada.strftime('%d/%m/%Y')}**")
 st.markdown("---")
 
 # ==========================================
 # 2. 🧬 PERFIL CORPORAL Y CÁLCULOS CIENTÍFICOS
 # ==========================================
-with st.expander("🧬 Configurar tu Perfil Corporal (Edad, Altura, Género)"):
+with st.expander(f"🧬 Configurar Perfil Corporal de {nombre_usuario} (Edad, Altura, Género)"):
     col_p1, col_p2 = st.columns(2)
     with col_p1:
         genero = st.radio("Seleccioná tu género:", ("Hombre", "Mujer"))
@@ -141,7 +141,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE Y FEEDBACK PREMIUM DE IA
+# 6. 📊 BALANCE Y FEEDBACK PERSONALIZADO (MEJORADO MULTIUSER)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular Resultados de Hoy"):
@@ -157,27 +157,27 @@ if st.button("Calcular Resultados de Hoy"):
         st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
     
     st.markdown("---")
-    st.subheader("🤖 Recomendaciones de tu Coach IA:")
+    st.subheader(f"🤖 Recomendaciones de tu Coach IA para {nombre_usuario}:")
     
     if not sin_harina_azucar:
-        st.error("⚠️ **¡Atención con los Permitidos!** Hoy se escapó alguna harina refinada o azúcar agregado. ¡Mañana reseteamos el chip y volvemos con todo al 100% limpio!")
+        st.error(f"⚠️ **¡Atención {nombre_usuario}!** Hoy se escapó alguna harina refinada o azúcar agregado. No te preocupes por el tropiezo, ¡a todos nos pasa! Pero recordá que estos alimentos despiertan la ansiedad matutina y sabotean tu ayuno. ¡Mañana reseteamos el chip y volvemos con todo al 100% limpio!")
     else:
-        st.success("✅ **¡Disciplina de Acero!** Mantuviste las harinas y azúcares en CERO absoluto.")
+        st.success(f"✅ **¡Disciplina de Acero, {nombre_usuario}!** Mantuviste las harinas y azúcares en CERO absoluto.")
 
     meta_proteina = peso_actual * 1.2
     if total_prot_dia < meta_proteina:
-        st.warning(f"🍗 **Faltó proteína:** Llegaste a {int(total_prot_dia)}g. Tu cuerpo te pide al menos {int(meta_proteina)}g. Mañana reforzá sumando carnes, huevos o Whey Protein.")
+        st.warning(f"🍗 **Refuerzo necesario:** Llegaste a {int(total_prot_dia)}g. Tu cuerpo te pide al menos {int(meta_proteina)}g para blindar tus músculos. Mañana acordate de reforzar sumando carnes, huevos o Whey Protein en tus platos principales.")
     
     if vasos_agua < 8:
-        st.info("💧 **Aviso de Hidratación:** Tomaste menos de 8 vasos de agua pura. Clavate un vaso al lado del mate para no perder minerales.")
+        st.info("💧 **Aviso de Hidratación:** Tomaste menos de 8 vasos de agua pura. Clavate un vaso al lado del mate para mantener el cuerpo hidratado.")
         
     if frutas > 4:
-        st.warning("🍎 **Alerta Frutal:** Comer más de 4 frutas al día aporta mucha fructosa. Controlá la cantidad.")
+        st.warning("🍎 **Alerta Frutal:** Comer más de 4 frutas al día aporta mucha fructosa. Controlá un poquito la cantidad.")
 
     st.markdown("---")
-    st.subheader("🎯 Mensaje para Luciano Bravo:")
+    st.subheader(f"🎯 Mensaje Especial para {nombre_usuario}:")
     if deficit_real >= deficit_ideal and sin_harina_azucar and total_prot_dia >= meta_proteina:
         st.balloons()
-        st.success(f"🏆 ¡DÍA PERFECTO, LUCIANO! Cumpliste el déficit, protegiste tus músculos y respetaste las reglas. ¡Mañana volvé a entrar a la app y mantené viva la racha!")
+        st.success(f"🏆 ¡DÍA PERFECTO, {nombre_usuario.upper()}! Cumpliste el déficit, protegiste tus músculos y respetaste las reglas a la perfección. Estás un paso gigante más cerca de tu meta de -10kg. ¡Mañana volvé a entrar a la app y mantené viva la racha!")
     else:
-        st.info(f"🔥 ¡Buen intento hoy, Luciano! Cada día anotado es una victoria. No rompas la constancia: mañana abrís la app otra vez y seguimos avanzando hacia la meta.")
+        st.info(f"🔥 ¡Buen intento hoy, {nombre_usuario}! Cada día anotado en este tracker es una victoria para tu constancia. No dejes de registrar: mañana abrís la app otra vez, ponés tu peso y seguimos avanzando juntos. ¡Vos podés!")
