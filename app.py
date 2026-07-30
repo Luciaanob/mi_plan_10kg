@@ -11,7 +11,7 @@ if "historial_progreso" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Analítico v6.0 | Tu Entrenador de Precisión IA")
+st.write("Versión Coach Analítico v6.1 | Tu Entrenador de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -104,7 +104,7 @@ base_alimentos = {
 total_kcal_dia = 0
 total_prot_dia = 0
 
-# Diccionario interno para trackear cantidades totales de alimentos cargados hoy
+# Diccionario para trackear cantidades totales hoy
 cantidades_totales = {}
 
 def procesar_bloque_comida(titulo_bloque, key_sufijo):
@@ -138,7 +138,7 @@ total_kcal_dia += (frutas * 60)
 total_prot_dia += (frutas * 0.5)
 st.markdown("---")
 
-procesar_bloque_comida("📸 Cena", "cena")
+procesar_bloque_comida("📸 Cene", "cena")
 st.markdown("---")
 
 st.subheader("⚠️ Filtro de Reglas")
@@ -176,23 +176,25 @@ if st.button("Calcular y Registrar Día"):
     st.markdown("---")
     st.subheader(f"🤖 Análisis Específico del Coach IA para {nombre_usuario}:")
     
-    # NUEVA SECCIÓN: AUDITORÍA ESPECÍFICA DE EXCESOS (Respuesta al requerimiento de Luciano)
     excesos_detectados = []
     
-    # Alerta Huevos
     if cantidades_totales.get("Huevo hervido (Unidad)", 0) > 3:
-        cant = cantidades_totales["Huevo hervido (Unidad)"]
-        excesos_detectados.append(f"🥚 **Huevos ({int(cant)} unidades):** Te sobrepasaste en la porción. Deberías haber comido entre **2 y 3 unidades** como máximo en el día. Ingerir tantos de golpe satura tu digestión innecesariamente.")
+        cant_h = cantidades_totales["Huevo hervido (Unidad)"]
+        excesos_detectados.append(f"🥚 **Huevos ({int(cant_h)} unidades):** Te sobrepasaste. Deberías haber comido entre **2 y 3 unidades** como máximo. Ingerir tantos satura tu digestión.")
     
-    # Alerta Carnes (Pollo, Vaca, Cerdo)
     for carne in ["Pollo (Pechuga/Muslo)", "Carne de Vaca (Cortes magros)", "Carne de Cerdo (Costillita/Bondiola)"]:
         if cantidades_totales.get(carne, 0) > 400:
-            cant = cantidades_totales[carne]
-            excesos_detectados.append(f"🥩 **{carne} ({int(cant)}g):** Te excediste con el tamaño de la porción. Comer más de 400g de carne en un día aporta un pico proteico que tu cuerpo no llega a asimilar del todo y se puede acumular. Tu porción ideal para tus 96kg sería de **150g a 250g** por comida.")
+            cant_c = cantidades_totales[carne]
+            excesos_detectados.append(f"🥩 **{carne} ({int(cant_c)}g):** Te excediste con la porción. Comer más de 400g aporta más proteína de la que asimilás. Tu porción ideal sería de **150g a 250g** por comida.")
             
-    # Alerta Quesos Pesados
     if cantidades_totales.get("Queso Cremoso / Por Salut / Mozzarella", 0) > 150 or cantidades_totales.get("Queso Rallado / Reggianito / Hebras", 0) > 80:
-        excesos_detectados.append(f"🧀 **Quesos:** Te pasaste con la cantidad de lácteos grasos. Los quesos son ricos pero densos. Deberías limitar el queso rallado a solo espolvorear (**15g a 30g**) y el cremoso a una feta (**30g a 50g**). El exceso suma calorías ocultas gigantes.")
+        excesos_detectados.append(f"🧀 **Quesos:** Te pasaste con los lácteos grasos. Deberías limitar el queso rallado a **15g-30g** y el cremoso a **30g-50g**. El exceso suma muchas calorías ocultas.")
 
-    # Alerta Frutas
     if frutas > 3:
+        excesos_detectados.append(f"🍎 **Frutas ({int(frutas)} unidades):** Te sobrepasaste. Comer más de 3 aporta exceso de fructosa (azúcar natural) que frena el déficit calórico. Lo ideal son **1 o 2 unidades** al día.")
+
+    if excesos_detectados:
+        st.error("🚨 **Análisis de porciones superadas hoy:**")
+        for exceso in excesos_detectados:
+            st.write(exceso)
+        st.markdown("  \n*Consejo:* Si fue un error al tipear probando la app, ¡limpiá los campos y cargá tu porción real! 💪")
