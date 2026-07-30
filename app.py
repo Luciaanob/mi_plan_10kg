@@ -2,10 +2,10 @@ import streamlit as st
 import datetime
 
 # Configuración de la página
-st.set_page_config(page_title="Mi Plan 10kg - Tracker", page_icon="💪", layout="centered")
+st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
-st.titlest.title("💪 Meta -10kg by Luciano Bravo")
-
+# TÍTULO PERSONALIZADO
+st.title("💪 Meta -10kg by Luciano Bravo")
 st.write("Cálculo por Comidas | 96kg | 14.000 pasos | Cero Harinas")
 
 # 📅 CALENDARIO
