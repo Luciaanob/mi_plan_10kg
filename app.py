@@ -7,32 +7,42 @@ st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", l
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Ultimate Coach v4.1 | Tu Entrenador Personal IA")
+st.write("Versión Ultimate Coach v4.2 | Tu Entrenador Personal IA")
 
-# 🧬 CONFIGURACIÓN DE TIPO DE CUERPO Y PERFIL
-st.header("🧬 Perfil Corporal")
-col_p1, col_p2 = st.columns(2)
+# ==========================================
+# 1. 📅 SECCIÓN MAESTRA: CALENDARIO (CORREGIDO ARRIBA)
+# ==========================================
+st.header("📅 Fecha de Registro")
+fecha_seleccionada = st.date_input("¿Qué día querés registrar o revisar?", datetime.date.today())
+st.write(f"Registrando datos para el día: **{fecha_seleccionada.strftime('%d/%m/%Y')}**")
+st.markdown("---")
 
-with col_p1:
-    genero = st.radio("Seleccioná tu género:", ("Hombre", "Mujer"))
-    peso_inicial = st.number_input("¿Cuánto pesabas el primer día? (Peso Inicial):", min_value=40.0, max_value=200.0, value=96.0, step=0.1)
-    peso_actual = st.number_input("Ingresá tu peso de hoy (kg):", min_value=40.0, max_value=200.0, value=96.0, step=0.1)
+# ==========================================
+# 2. 🧬 PERFIL CORPORAL Y CÁLCULOS CIENTÍFICOS
+# ==========================================
+with st.expander("🧬 Configurar tu Perfil Corporal (Edad, Altura, Género)"):
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        genero = st.radio("Seleccioná tu género:", ("Hombre", "Mujer"))
+        peso_inicial = st.number_input("¿Cuánto pesabas el primer día? (Peso Inicial):", min_value=40.0, max_value=200.0, value=96.0, step=0.1)
+    with col_p2:
+        altura = st.number_input("Ingresá tu altura (metros):", min_value=1.20, max_value=2.30, value=1.77, step=0.01)
+        edad = st.number_input("Ingresá tu edad:", min_value=15, max_value=100, value=39, step=1)
 
-with col_p2:
-    altura = st.number_input("Ingresá tu altura (metros):", min_value=1.20, max_value=2.30, value=1.77, step=0.01)
-    edad = st.number_input("Ingresá tu edad:", min_value=15, max_value=100, value=30, step=1)
-
-# 🧠 CÁLCULO CIENTÍFICO AUTOMÁTICO (Fórmula Harris-Benedict)
+# Cálculo automático de metabolismo (Fórmula Harris-Benedict)
 if genero == "Hombre":
-    bmr = 66.47 + (13.75 * peso_actual) + (5.00 * (altura * 100)) - (6.75 * edad)
+    bmr = 66.47 + (13.75 * peso_inicial) + (5.00 * (altura * 100)) - (6.75 * edad)
     deficit_ideal = 700  
 else:
-    bmr = 655.1 + (9.56 * peso_actual) + (1.85 * (altura * 100)) - (4.68 * edad)
+    bmr = 655.1 + (9.56 * peso_inicial) + (1.85 * (altura * 100)) - (4.68 * edad)
     deficit_ideal = 500  
 
-st.info(f"🧬 Tu cuerpo quema **{int(bmr)} kcal** al día solo por existir (Metabolismo Basal).  \n🎯 Tu déficit ideal recomendado es de **-{deficit_ideal} kcal** diarios.")
+# ==========================================
+# 3. ⚖️ CONTROL DE PESO DIARIO Y PROGRESO
+# ==========================================
+st.header("⚖️ Control de Peso")
+peso_actual = st.number_input("Ingresá tu peso de hoy (kg):", min_value=40.0, max_value=200.0, value=95.0, step=0.1)
 
-# ⚖️ BARRA DE PROGRESO DE PESO UNIVERSAL (LÍNEA CORREGIDA)
 meta_peso = peso_inicial - 10.0
 kilos_bajados = peso_inicial - peso_actual
 
@@ -45,26 +55,28 @@ elif kilos_bajados == 0:
 else:
     st.warning("Mantené la calma, el peso fluctúa por retención de agua. ¡Seguí firme!")
 
-# Gráfico de peso interactivo
-st.subheader("📉 Tu Curva de Descenso")
+# Gráfico interactivo
 datos_peso = pd.DataFrame({
     "Días": ["Inicio", "Actual"],
     "Peso (kg)": [peso_inicial, peso_actual]
 })
 st.line_chart(datos_peso.set_index("Días"))
+st.markdown("---")
 
-# 📅 CALENDARIO Y PASOS
-st.header("📅 Registro del Día")
-fecha_seleccionada = st.date_input("¿Qué día querés registrar?", datetime.date.today())
-
+# ==========================================
+# 4. 🚶‍♂️ PASOS Y ACTIVIDAD Y HIDRATACIÓN
+# ==========================================
+st.header("🚶‍♂️ Actividad del Día")
 pasos = st.number_input("¿Cuántos pasos hiciste hoy?", min_value=0, value=14000, step=500)
 kcal_pasos = int(pasos * 0.055)
 
-# 💧 CONTROL DE HIDRATACIÓN
 st.subheader("💧 Control de Hidratación")
 vasos_agua = st.slider("¿Cuántos vasos de agua pura (250ml) tomaste hoy?", 0, 12, 4)
+st.markdown("---")
 
-# 🥑 BASE DE DATOS DE ALIMENTOS
+# ==========================================
+# 5. 🥑 REGISTRO DE ALIMENTOS
+# ==========================================
 base_alimentos = {
     "Pollo (Pechuga/Muslo)": {"kcal": 165, "prot": 31, "unidad": "100g"},
     "Carne de Vaca (Cortes magros)": {"kcal": 200, "prot": 26, "unidad": "100g"},
@@ -128,7 +140,9 @@ hora_cena = st.time_input("¿A qué hora terminás de cenar?", datetime.time(22,
 hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + datetime.timedelta(hours=14)).time()
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
-# 📊 BALANCE Y FEEDBACK PREMIUM DE IA
+# ==========================================
+# 6. 📊 BALANCE Y FEEDBACK PREMIUM DE IA
+# ==========================================
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular Resultados de Hoy"):
     gasto_total = int(bmr) + kcal_pasos
@@ -146,24 +160,24 @@ if st.button("Calcular Resultados de Hoy"):
     st.subheader("🤖 Recomendaciones de tu Coach IA:")
     
     if not sin_harina_azucar:
-        st.error("⚠️ **¡Atención con los Permitidos!** Hoy se escapó alguna harina refinada o azúcar agregado. No te preocupes por el tropiezo, a todos nos pasa, pero recordá que estos alimentos despiertan la ansiedad matutina y sabotean tu ayuno de 14hs. ¡Mañana reseteamos el chip y volvemos con todo al 100% limpio!")
+        st.error("⚠️ **¡Atención con los Permitidos!** Hoy se escapó alguna harina refinada o azúcar agregado. ¡Mañana reseteamos el chip y volvemos con todo al 100% limpio!")
     else:
-        st.success("✅ **¡Disciplina de Acero!** Mantuviste las harinas y azúcares en CERO absoluto. Esto mantiene tu insulina plana y asegura la máxima quema de grasa.")
+        st.success("✅ **¡Disciplina de Acero!** Mantuviste las harinas y azúcares en CERO absoluto.")
 
     meta_proteina = peso_actual * 1.2
     if total_prot_dia < meta_proteina:
-        st.warning(f"🍗 **Faltó proteína:** Llegaste a {int(total_prot_dia)}g, pero tu cuerpo de {int(peso_actual)}kg te pide al menos {int(meta_proteina)}g para blindar el músculo. Mañana reforzá el almuerzo o cena agregando más pollo, carne magra, huevo duro o sumando el scoop de Whey Protein.")
+        st.warning(f"🍗 **Faltó proteína:** Llegaste a {int(total_prot_dia)}g. Tu cuerpo te pide al menos {int(meta_proteina)}g. Mañana reforzá sumando carnes, huevos o Whey Protein.")
     
     if vasos_agua < 8:
-        st.info("💧 **Aviso de Hidratación:** Tomaste menos de 8 vasos de agua pura. Recordá que el mate es diurético; por cada termo que te bajes a la mañana, clavate un vaso de agua al lado para no perder minerales.")
+        st.info("💧 **Aviso de Hidratación:** Tomaste menos de 8 vasos de agua pura. Clavate un vaso al lado del mate para no perder minerales.")
         
     if frutas > 4:
-        st.warning("🍎 **Alerta Frutal:** Comer más de 4 frutas al día aporta mucha fructosa (azúcar natural). Está perfecto comer mandarinas o bananas, pero controlá la cantidad para no frenar el déficit.")
+        st.warning("🍎 **Alerta Frutal:** Comer más de 4 frutas al día aporta mucha fructosa. Controlá la cantidad.")
 
     st.markdown("---")
     st.subheader("🎯 Mensaje para Luciano Bravo:")
     if deficit_real >= deficit_ideal and sin_harina_azucar and total_prot_dia >= meta_proteina:
         st.balloons()
-        st.success(f"🏆 ¡DÍA PERFECTO, LUCIANO! Cumplisse el déficit, protegiste tus músculos y respetaste las reglas. Estás un paso gigante más cerca de los 86kg. ¡Mañana volvé a entrar a la app y mantené viva la racha!")
+        st.success(f"🏆 ¡DÍA PERFECTO, LUCIANO! Cumpliste el déficit, protegiste tus músculos y respetaste las reglas. ¡Mañana volvé a entrar a la app y mantené viva la racha!")
     else:
-        st.info(f"🔥 ¡Buen intento hoy, Luciano! Cada día anotado en este tracker es una victoria para tu disciplina. No rompas la constancia: mañana abrís la app otra vez, registrás tu peso matutino, tu mate con mandarina y seguimos avanzando hacia la meta. ¡Vos podés!")
+        st.info(f"🔥 ¡Buen intento hoy, Luciano! Cada día anotado es una victoria. No rompas la constancia: mañana abrís la app otra vez y seguimos avanzando hacia la meta.")
