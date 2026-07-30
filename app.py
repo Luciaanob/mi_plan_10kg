@@ -7,7 +7,7 @@ st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", l
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Universal | Cálculo de Déficit Personalizado")
+st.write("Versión Ultimate Coach v4.0 | Tu Entrenador Personal IA")
 
 # 🧬 CONFIGURACIÓN DE TIPO DE CUERPO Y PERFIL
 st.header("🧬 Perfil Corporal")
@@ -39,13 +39,13 @@ kilos_bajados = peso_inicial - peso_actual
 if kilos_bajados > 0:
     st.success(f"🎉 ¡Ya bajaste **{kilos_bajados:.1f} kg** desde que empezaste!")
     st.progress(min(kilos_bajados / 10.0, 1.0))
-    st.write(f"Te faltan **{peso_actual - meta_peso:.1f} kg** para tu meta final de {meta_peso:.1f} kg.")
+    st.write(f"Te faltan **{peso_actual - meta_meta_peso:.1f} kg** para tu meta final de {meta_peso:.1f} kg.")
 elif kilos_bajados == 0:
     st.info(f"Punto de partida: {peso_inicial} kg. ¡Hoy arranca el cambio!")
 else:
     st.warning("Mantené la calma, el peso fluctúa por retención de agua. ¡Seguí firme!")
 
-# Gráfico de peso interactivo adaptado
+# Gráfico de peso interactivo
 st.subheader("📉 Tu Curva de Descenso")
 datos_peso = pd.DataFrame({
     "Días": ["Inicio", "Actual"],
@@ -101,8 +101,7 @@ def procesar_bloque_comida(titulo_bloque, key_sufijo):
                 total_kcal_dia += (info["kcal"] * cantidad) / 100
                 total_prot_dia += (info["prot"] * cantidad) / 100
             else:
-                character_id = f"{alimento}_{key_sufijo}"
-                cantidad = st.number_input(f"Unidades de {alimento}:", min_value=0, value=1, step=1, key=character_id)
+                cantidad = st.number_input(f"Unidades de {alimento}:", min_value=0, value=1, step=1, key=f"{alimento}_{key_sufijo}")
                 total_kcal_dia += info["kcal"] * cantidad
                 total_prot_dia += info["prot"] * cantidad
 
@@ -129,7 +128,7 @@ hora_cena = st.time_input("¿A qué hora terminás de cenar?", datetime.time(22,
 hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + datetime.timedelta(hours=14)).time()
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
-# 📊 BALANCE FINAL AUTOMÁTICO
+# 📊 BALANCE Y FEEDBACK PREMIUM DE IA
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular Resultados de Hoy"):
     gasto_total = int(bmr) + kcal_pasos
@@ -143,20 +142,33 @@ if st.button("Calcular Resultados de Hoy"):
         st.metric(label="Gasto Diario Total", value=f"{gasto_total} kcal")
         st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
     
-    st.subheader("💡 Análisis de tu IA:")
-    st.write(f"🎯 Tu meta de déficit ideal es de: **{deficit_ideal} kcal**.")
+    st.markdown("---")
+    st.subheader("🤖 Recomendaciones de tu Coach IA:")
     
-    if deficit_real >= deficit_ideal:
-        st.success(f"🔥 ¡Espectacular! Lograste un déficit de {int(deficit_real)} kcal, superando tu meta ideal de {deficit_ideal} kcal.")
+    # 1. Alerta de Harinas / Azúcares (Petición especial de Luciano)
+    if not sin_harina_azucar:
+        st.error("⚠️ **¡Atención con los Permitidos!** Hoy se escapó alguna harina refinada o azúcar agregado. No te preocupes por el tropiezo, a todos nos pasa, pero recordá que estos alimentos despiertan la ansiedad matutina y sabotean tu ayuno de 14hs. ¡Mañana reseteamos el chip y volvemos con todo al 100% limpio!")
     else:
-        st.warning(f"⚠️ Hoy tu déficit fue de {int(deficit_real)} kcal (menor al ideal de {deficit_ideal} kcal).")
-        
-    if total_prot_dia < (peso_actual * 1.2):
-        st.warning(f"⚠️ Estás bajo en proteínas ({int(total_prot_dia)}g). Intentá subir el consumo de carnes o huevos para proteger tu masa muscular.")
-    else:
-        st.success("💪 ¡Nivel de proteína óptimo! Tus músculos están blindados según tu tipo de cuerpo.")
-        
-    if deficit_real >= deficit_ideal and sin_harina_azucar and total_prot_dia >= (peso_actual * 1.2):
-        st.balloons()
-        st.success(f"🏆 ¡Día Perfecto de Recomposición registrado para el {fecha_seleccionada.strftime('%d/%m/%Y')}!")
+        st.success("✅ **¡Disciplina de Acero!** Mantuviste las harinas y azúcares en CERO absoluto. Esto mantiene tu insulina plana y asegura la máxima quema de grasa.")
 
+    # 2. Control de Proteínas
+    meta_proteina = peso_actual * 1.2
+    if total_prot_dia < meta_proteina:
+        st.warning(f"🍗 **Faltó proteína:** Llegaste a {int(total_prot_dia)}g, pero tu cuerpo de {int(peso_actual)}kg te pide al menos {int(meta_proteina)}g para blindar el músculo. Mañana reforzá el almuerzo o cena agregando más pollo, carne magra, huevo duro o sumando el scoop de Whey Protein.")
+    
+    # 3. Control de Agua
+    if vasos_agua < 8:
+        st.info("💧 **Aviso de Hidratación:** Tomaste menos de 8 vasos de agua pura. Recordá que el mate es diurético; por cada termo que te bajes a la mañana, clavate un vaso de agua al lado para no perder minerales.")
+        
+    # 4. Control de Frutas
+    if frutas > 4:
+        st.warning("🍊 **Alerta Frutal:** Comer más de 4 frutas al día aporta mucha fructosa (azúcar natural). Está perfecto comer mandarinas o bananas, pero controlá la cantidad para no frenar el déficit.")
+
+    # 5. MENSAJE FINAL DE MOTIVACIÓN CONTINUA DIARIA
+    st.markdown("---")
+    st.subheader("🎯 Mensaje para Luciano Bravo:")
+    if deficit_real >= deficit_ideal and sin_harina_azucar and total_prot_dia >= meta_proteina:
+        st.balloons()
+        st.success(f"🏆 ¡DÍA PERFECTO, LUCIANO! Cumpliste el déficit, protegiste tus músculos y respetaste las reglas. Estás un paso gigante más cerca de los 86kg. ¡Mañana volvé a entrar a la app y mantené viva la racha!")
+    else:
+        st.info(f"🔥 ¡Buen intento hoy, Luciano! Cada día anotado en este tracker es una victoria para tu disciplina. No rompas la constancia: mañana abrís la app otra vez, registrás tu peso matutino, tu mate con mandarina y seguimos avanzando hacia la meta. ¡Vos podés!")
