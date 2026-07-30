@@ -11,7 +11,7 @@ if "historial_progreso" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Sincero v5.2 | Tu Entrenador Personal IA")
+st.write("Versión Coach Sincero v5.3 | Tu Entrenador Personal IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -23,9 +23,9 @@ st.write(f"Hola **{nombre_usuario}**, registrando para el día: **{fecha_selecci
 st.markdown("---")
 
 # ==========================================
-# 2. 🧬 PERFIL CORPORAL Y CÁLCULOS CIENTÍFICOS
+# 2. 🧬 PERFIL CORPORAL ABIERTO POR DEFECTO (CORREGIDO)
 # ==========================================
-with st.expander(f"🧬 Configurar Perfil Corporal de {nombre_usuario}"):
+with st.expander(f"🧬 Perfil Corporal de {nombre_usuario}", expanded=True):
     col_p1, col_p2 = st.columns(2)
     with col_p1:
         genero = st.radio("Seleccioná tu género:", ("Hombre", "Mujer"))
@@ -56,6 +56,14 @@ if kilos_bajados > 0:
     st.write(f"Te faltan **{peso_actual - meta_peso:.1f} kg** para tu meta final de {meta_peso:.1f} kg.")
 else:
     st.info(f"Punto de partida: {peso_inicial} kg. ¡Hoy arranca el cambio!")
+
+# Gráfico interactivo
+datos_peso = pd.DataFrame({
+    "Días": ["Inicio", "Actual"],
+    "Peso (kg)": [peso_inicial, peso_actual]
+})
+st.line_chart(datos_peso.set_index("Días"))
+st.markdown("---")
 
 # ==========================================
 # 4. 🚶‍♂️ PASOS Y HIDRATACIÓN
@@ -162,11 +170,11 @@ if st.button("Calcular y Registrar Día"):
     st.subheader(f"🤖 Recomendaciones de tu Coach IA para {nombre_usuario}:")
     
     if deficit_real > 1200:
-        st.error(f"🚨 **¡Cuidado, {nombre_usuario}! El déficit es peligrosamente alto ({int(deficit_real)} kcal).**  \nEsto suele pasar por dos motivos:  \n1. Comiste extremadamente poco hoy (lo cual va a destruir tu masa muscular y ralentizar tu metabolismo).  \n2. Hubo un error de tipeo al cargar las cantidades en la app.  \n*Consejo:* Si fue real, mañana asegurate de comer más volumen de comida limpia. Si fue un error, revisá los números de arriba.")
+        st.error(f"🚨 **¡Cuidado, {nombre_usuario}! El déficit es peligrosamente alto ({int(deficit_real)} kcal).**  \nEsto suele pasar porque comiste extremadamente poco hoy o por un error al cargar las cantidades de comida. ¡Mañana asegurate de comer buen volumen de comida limpia!")
     elif deficit_real >= deficit_ideal:
         st.success(f"🔥 ¡Espectacular! Lograste un déficit de {int(deficit_real)} kcal, cumpliendo tu meta ideal de -{deficit_ideal} kcal.")
     else:
-        st.warning(f"⚠️ Hoy tu déficit fue menor al ideal recomendado. Intentá ajustar un poco más las porciones o meter más pasos mañana.")
+        st.warning(f"⚠️ Hoy tu déficit fue menor al ideal recomendado. Intentá ajustar un poco más las porciones mañana.")
 
     if not sin_harina_azucar:
         st.error(f"⚠️ **Reglas:** Hoy se escapó alguna harina o azúcar. ¡Mañana volvemos al camino limpio!")
