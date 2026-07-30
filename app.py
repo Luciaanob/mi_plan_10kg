@@ -7,13 +7,13 @@ st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", l
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Premium v2.0 | 96kg Inicial | 14.000 pasos | Cero Harinas")
+st.write("Versión Premium v2.1 | 96kg Inicial | 14.000 pasos | Cero Harinas")
 
 # 📅 CALENDARIO
 st.header("📅 Seleccionar Fecha")
 fecha_seleccionada = st.date_input("¿Qué día querés registrar?", datetime.date.today())
 
-# ⚖️ CONTROL DE PESO DIARIO Y GRÁFICO (MEJORADO)
+# ⚖️ CONTROL DE PESO DIARIO Y GRÁFICO
 st.header("⚖️ Control de Peso")
 peso_actual = st.number_input("Ingresá tu peso de hoy (kg):", min_value=50.0, max_value=150.0, value=96.0, step=0.1)
 
@@ -30,7 +30,7 @@ elif kilos_bajados == 0:
 else:
     st.warning("Mantené la calma y seguí firme con el déficit, el peso fluctúa por agua.")
 
-# Simulación de Historial de Peso para el gráfico interactivo
+# Gráfico de peso
 st.subheader("📉 Tu Curva de Descenso")
 datos_peso = pd.DataFrame({
     "Días": ["Inicio", "Actual"],
@@ -43,9 +43,8 @@ st.header("🚶‍♂️ Tus 14.000 Pasos")
 pasos = st.number_input("¿Cuántos pasos hiciste hoy?", min_value=0, value=14000, step=500)
 kcal_pasos = int(pasos * 0.055)
 
-# 💧 CONTROL DE HIDRATACIÓN (NUEVO)
+# 💧 CONTROL DE HIDRATACIÓN
 st.header("💧 Control de Hidratación")
-st.write("Por cada termo de mate matutino o caminata, recordá sumar agua pura.")
 vasos_agua = st.slider("¿Cuántos vasos de agua pura (250ml) tomaste hoy?", 0, 12, 4)
 if vasos_agua < 8:
     st.warning("⚠️ Intentá llegar a 8 vasos diarios para limpiar tu organismo y rendir más al caminar.")
@@ -69,8 +68,6 @@ base_alimentos = {
     "Calabaza/Zapallo al horno o puré": {"kcal": 30, "prot": 1, "unidad": "100g"},
     "Lentejas/Garbanzos/Porotos": {"kcal": 116, "prot": 9, "unidad": "100g"},
     "Quinoa cocida": {"kcal": 120, "prot": 4, "unidad": "100g"},
-    "Banana (Unidad)": {"kcal": 105, "prot": 1, "unidad": "unidad"},
-    "Manzana/Pera/Naranja (Unidad)": {"kcal": 60, "prot": 0.5, "unidad": "unidad"},
     "Brócoli/Zanahoria/Tomate/Zucchini": {"kcal": 30, "prot": 2, "unidad": "100g"},
     "Verduras de hoja (Lechuga/Acelga)": {"kcal": 15, "prot": 1, "unidad": "100g"},
 }
@@ -101,11 +98,11 @@ st.markdown("---")
 procesar_bloque_comida("🥛 Merienda", "merienda")
 st.markdown("---")
 
-# 🍊 CONTROL DE MANDARINAS (NUEVO)
-st.subheader("🍊 Bonus: Tus Mandarinas Favoritas")
-mandarinas = st.number_input("¿Cuántas mandarinas comiste en total hoy?", min_value=0, value=0, step=1)
-total_kcal_dia += (mandarinas * 45)
-total_prot_dia += (mandarinas * 1)
+# 🍎 SECCIÓN CORREGIDA: CONTADOR GENERAL DE FRUTAS
+st.subheader("🍎 Registro de Frutas")
+frutas = st.number_input("¿Cuántas frutas enteras comiste hoy? (Mandarinas, manzanas, etc.)", min_value=0, value=0, step=1)
+total_kcal_dia += (frutas * 60) # Promedio de calorías por fruta común
+total_prot_dia += (frutas * 0.5)
 st.markdown("---")
 
 procesar_bloque_comida("📸 Cena", "cena")
@@ -139,8 +136,8 @@ if st.button("Calcular Resultados de Hoy"):
     else:
         st.success("💪 ¡Nivel de proteína espectacular! Tus músculos están blindados.")
         
-    if mandarinas > 4:
-        st.warning("⚠️ ¡Ojo con el festival de mandarinas! Más de 4 unidades suman azúcares que restan al déficit calórico.")
+    if frutas > 4:
+        st.warning("⚠️ Recordá que aunque las frutas sean sanas, comer más de 4 unidades al día suma azúcares naturales que pueden recortar tu déficit.")
         
     if deficit > 1000 and sin_harina_azucar and total_prot_dia >= 85:
         st.balloons()
