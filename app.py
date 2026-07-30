@@ -5,13 +5,13 @@ import pandas as pd
 # Configuración de la página
 st.set_page_config(page_title="Mi Tracker Personal - Meta -10kg", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN (Se asegura de que exista el historial)
+# CREAR MEMORIA DE SESIÓN
 if "historial_progreso" not in st.session_state:
     st.session_state["historial_progreso"] = []
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Analítico v6.2 | Tu Entrenador de Precisión IA")
+st.write("Versión Coach Analítico v6.3 | Tu Entrenador de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -113,9 +113,9 @@ def procesar_bloque_comida(titulo_bloque, key_sufijo):
             info = base_alimentos[alimento]
             if info["unidad"] == "100g":
                 cantidad = st.number_input(f"Gramos de {alimento}:", min_value=0, value=50 if "Queso" in alimento else 150, step=10 if "Queso" in alimento else 50, key=f"{alimento}_{key_sufijo}")
-                total_kcal_dia += (info["kcal"] * cantidad) / 100
-                total_prot_dia += (info["prot"] * cantidad) / 100
-                cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
+                total_kcal_dia += (info["kcal"] * quantitative := cantidad) / 100
+                total_prot_dia += (info["prot"] * quantitative) / 100
+                cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + quantitative
             else:
                 cantidad = st.number_input(f"Unidades de {alimento}:", min_value=0, value=1, step=1, key=f"{alimento}_{key_sufijo}")
                 total_kcal_dia += info["kcal"] * cantidad
@@ -146,14 +146,13 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE FINAL SIN CANDADOS (TOTALMENTE LIBERADO)
+# 6. 📊 BALANCE FINAL
 # ==========================================
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular y Registrar Día"):
     gasto_total = int(bmr) + kcal_pasos
     deficit_real = gasto_total - total_kcal_dia
     
-    # GUARDAR SÍ O SÍ EN EL HISTORIAL
     nuevo_registro = {
         "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
         "Usuario": nombre_usuario,
@@ -166,7 +165,6 @@ if st.button("Calcular y Registrar Día"):
     st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_registro["Fecha"]]
     st.session_state["historial_progreso"].append(nuevo_registro)
     
-    # MOSTRAR MÉTRICAS INMEDIATAS
     st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
     st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
     st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
@@ -174,7 +172,6 @@ if st.button("Calcular y Registrar Día"):
     st.markdown("---")
     st.subheader(f"🤖 Análisis Específico del Coach IA para {nombre_usuario}:")
     
-    # Auditoría de porciones
     excesos_detectados = []
     if cantidades_totales.get("Huevo hervido (Unidad)", 0) > 3:
         cant_h = cantidades_totales["Huevo hervido (Unidad)"]
@@ -196,3 +193,7 @@ if st.button("Calcular y Registrar Día"):
         for exceso in excesos_detectados:
             st.write(exceso)
     else:
+        st.success("🎯 **¡Control de Porciones Perfecto!** No se detectaron excesos graves en ningún alimento. ¡Excelente balance!")
+
+    st.markdown("---")
+    if deficit_real < -500:
