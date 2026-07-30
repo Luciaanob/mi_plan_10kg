@@ -5,13 +5,13 @@ import pandas as pd
 # Configuración de la página
 st.set_page_config(page_title="Mi Tracker Personal - Meta -10kg", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN
+# CREAR MEMORIA DE SESIÓN (Se asegura de que exista el historial)
 if "historial_progreso" not in st.session_state:
     st.session_state["historial_progreso"] = []
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Analítico v6.1 | Tu Entrenador de Precisión IA")
+st.write("Versión Coach Analítico v6.2 | Tu Entrenador de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -30,6 +30,7 @@ with st.expander(f"🧬 Perfil Corporal de {nombre_usuario}", expanded=True):
     with col_p1:
         genero = st.radio("Seleccioná tu género:", ("Hombre", "Mujer"))
         peso_inicial = st.number_input("¿Peso Inicial? (Primer día):", min_value=40.0, max_value=200.0, value=96.0, step=0.1)
+        peso_actual = st.number_input("Ingresá tu peso de hoy (kg):", min_value=40.0, max_value=200.0, value=95.0, step=0.1)
     with col_p2:
         altura = st.number_input("Ingresá tu altura (metros):", min_value=1.20, max_value=2.30, value=1.77, step=0.01)
         edad = st.number_input("Ingresá tu edad:", min_value=15, max_value=100, value=39, step=1)
@@ -44,11 +45,8 @@ else:
 st.info(f"🧬 Tu cuerpo quema **{int(bmr)} kcal** al día solo por existir (Metabolismo Basal).  \n🎯 Tu déficit ideal recomendado es de **-{deficit_ideal} kcal** diarios.")
 
 # ==========================================
-# 3. ⚖️ CONTROL DE PESO DIARIO Y PROGRESO
+# 3. ⚖️ PROGRESO DE PESO
 # ==========================================
-st.header("⚖️ Control de Peso")
-peso_actual = st.number_input("Ingresá tu peso de hoy (kg):", min_value=40.0, max_value=200.0, value=95.0, step=0.1)
-
 meta_peso = peso_inicial - 10.0
 kilos_bajados = peso_inicial - peso_actual
 
@@ -103,8 +101,6 @@ base_alimentos = {
 
 total_kcal_dia = 0
 total_prot_dia = 0
-
-# Diccionario para trackear cantidades totales hoy
 cantidades_totales = {}
 
 def procesar_bloque_comida(titulo_bloque, key_sufijo):
@@ -138,7 +134,7 @@ total_kcal_dia += (frutas * 60)
 total_prot_dia += (frutas * 0.5)
 st.markdown("---")
 
-procesar_bloque_comida("📸 Cene", "cena")
+procesar_bloque_comida("📸 Cena", "cena")
 st.markdown("---")
 
 st.subheader("⚠️ Filtro de Reglas")
@@ -150,13 +146,14 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE Y AUDITORÍA DE EXCESOS
+# 6. 📊 BALANCE FINAL SIN CANDADOS (TOTALMENTE LIBERADO)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular y Registrar Día"):
     gasto_total = int(bmr) + kcal_pasos
     deficit_real = gasto_total - total_kcal_dia
     
+    # GUARDAR SÍ O SÍ EN EL HISTORIAL
     nuevo_registro = {
         "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
         "Usuario": nombre_usuario,
@@ -169,6 +166,7 @@ if st.button("Calcular y Registrar Día"):
     st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_registro["Fecha"]]
     st.session_state["historial_progreso"].append(nuevo_registro)
     
+    # MOSTRAR MÉTRICAS INMEDIATAS
     st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
     st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
     st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
@@ -176,8 +174,8 @@ if st.button("Calcular y Registrar Día"):
     st.markdown("---")
     st.subheader(f"🤖 Análisis Específico del Coach IA para {nombre_usuario}:")
     
+    # Auditoría de porciones
     excesos_detectados = []
-    
     if cantidades_totales.get("Huevo hervido (Unidad)", 0) > 3:
         cant_h = cantidades_totales["Huevo hervido (Unidad)"]
         excesos_detectados.append(f"🥚 **Huevos ({int(cant_h)} unidades):** Te sobrepasaste. Deberías haber comido entre **2 y 3 unidades** como máximo. Ingerir tantos satura tu digestión.")
@@ -197,4 +195,4 @@ if st.button("Calcular y Registrar Día"):
         st.error("🚨 **Análisis de porciones superadas hoy:**")
         for exceso in excesos_detectados:
             st.write(exceso)
-        st.markdown("  \n*Consejo:* Si fue un error al tipear probando la app, ¡limpiá los campos y cargá tu porción real! 💪")
+    else:
