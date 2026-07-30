@@ -11,7 +11,7 @@ if "historial_progreso" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Humano v7.2 | Tu Compañero de Equipo Diario")
+st.write("Versión Estable v8.0 | Tu Compañero de Equipo Diario")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -45,7 +45,7 @@ else:
 st.info(f"🧬 Tu cuerpo quema **{int(bmr)} kcal** al día solo por existir (Metabolismo Basal).  \n🎯 Tu déficit ideal recomendado es de **-{deficit_ideal} kcal** diarios.")
 
 # ==========================================
-# 3. ⚖️ PROGRESO DE PESO
+# 3. ⚖ Rose PROGRESO DE PESO
 # ==========================================
 meta_peso = peso_inicial - 10.0
 kilos_bajados = peso_inicial - peso_actual
@@ -77,7 +77,7 @@ vasos_agua = st.slider("¿Cuántos vasos de agua (250ml) tomaste hoy?", 0, 12, 4
 st.markdown("---")
 
 # ==========================================
-# 5. 🥑 REGISTRO DE ALIMENTOS
+# 5. 🥑 REGISTRO DE ALIMENTOS INDEPENDIENTES
 # ==========================================
 base_alimentos = {
     "Pollo (Pechuga/Muslo)": {"kcal": 165, "prot": 31, "unidad": "100g"},
@@ -175,25 +175,20 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE FINAL (CON TONO CERCANO Y CÁLIDO)
+# 6. 📊 BALANCE FINAL (REESCRITO TOTALMENTE PLANO SIN INDENTACIONES DE RIESGO)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular y Registrar Día"):
     gasto_total = int(bmr) + kcal_pasos
     deficit_real = gasto_total - total_kcal_dia
+    meta_proteina = peso_actual * 1.2
     
-    nuevo_registro = {
-        "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
-        "Usuario": nombre_usuario,
-        "Peso (kg)": peso_actual,
-        "Pasos": pasos,
-        "Consumo (kcal)": int(total_kcal_dia),
-        "Proteínas (g)": int(total_prot_dia),
-        "Déficit (kcal)": int(deficit_real)
-    }
+    # GUARDAR EN EL HISTORIAL
+    nuevo_registro = {"Fecha": fecha_seleccionada.strftime('%d/%m/%Y'), "Usuario": nombre_usuario, "Peso (kg)": peso_actual, "Pasos": pasos, "Consumo (kcal)": int(total_kcal_dia), "Proteínas (g)": int(total_prot_dia), "Déficit (kcal)": int(deficit_real)}
     st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_registro["Fecha"]]
     st.session_state["historial_progreso"].append(nuevo_registro)
     
+    # MÉTRICAS PRINCIPALES
     st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
     st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
     st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
@@ -201,5 +196,5 @@ if st.button("Calcular y Registrar Día"):
     st.markdown("---")
     st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
     
-    # TONO HUMANO Y CÁLIDO DEVUELTO (Petición Luciano)
+    # EVALUACIÓN DE DÉFICIT EXTREMO O SALUDABLE (DISEÑO TOTALMENTE PLANO)
     if deficit_real > 1200:
