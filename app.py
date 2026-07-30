@@ -3,7 +3,7 @@ import datetime
 import pandas as pd
 
 # Configuración de la página
-st.set_page_config(page_title="Mi Tracker Personal - Meta -10kg", page_icon="💪", layout="centered")
+st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
 # CREAR MEMORIA DE SESIÓN
 if "historial_progreso" not in st.session_state:
@@ -11,7 +11,7 @@ if "historial_progreso" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Analítico v6.4 | Tu Entrenador de Precisión IA")
+st.write("Versión Estable v7.0 | Tu Entrenador de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -77,7 +77,7 @@ vasos_agua = st.slider("¿Cuántos vasos de agua (250ml) tomaste hoy?", 0, 12, 4
 st.markdown("---")
 
 # ==========================================
-# 5. 🥑 REGISTRO DE ALIMENTOS
+# 5. 🥑 REGISTRO DE ALIMENTOS INDEPENDIENTES
 # ==========================================
 base_alimentos = {
     "Pollo (Pechuga/Muslo)": {"kcal": 165, "prot": 31, "unidad": "100g"},
@@ -99,42 +99,71 @@ base_alimentos = {
     "Verduras de hoja (Lechuga/Acelga)": {"kcal": 15, "prot": 1, "unidad": "100g"},
 }
 
+st.header("📝 Registro por Comidas")
 total_kcal_dia = 0
 total_prot_dia = 0
 cantidades_totales = {}
 
-def procesar_bloque_comida(titulo_bloque, key_sufijo):
-    global total_kcal_dia, total_prot_dia, cantidades_totales
-    st.subheader(titulo_bloque)
-    elegidos = st.multiselect(f"¿Qué sumaste en tu {titulo_bloque.lower()}?", list(base_alimentos.keys()), key=f"select_{key_sufijo}")
-    
-    if elegidos:
-        for alimento in elegidos:
-            info = base_alimentos[alimento]
-            if info["unidad"] == "100g":
-                cantidad = st.number_input(f"Gramos de {alimento}:", min_value=0, value=50 if "Queso" in alimento else 150, step=10 if "Queso" in alimento else 50, key=f"{alimento}_{key_sufijo}")
-                total_kcal_dia += (info["kcal"] * cantidad) / 100
-                total_prot_dia += (info["prot"] * cantidad) / 100
-                cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
-            else:
-                cantidad = st.number_input(f"Unidades de {alimento}:", min_value=0, value=1, step=1, key=f"{alimento}_{key_sufijo}")
-                total_kcal_dia += info["kcal"] * cantidad
-                total_prot_dia += info["prot"] * cantidad
-                cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
+# Almuerzo
+st.subheader("📸 Almuerzo")
+almuerzo_elegidos = st.multiselect("¿Qué sumaste en tu almuerzo?", list(base_alimentos.keys()), key="select_almuerzo")
+for alimento in almuerzo_elegidos:
+    info = base_alimentos[alimento]
+    if info["unidad"] == "100g":
+        cantidad = st.number_input(f"Gramos de {alimento} (Almuerzo):", min_value=0, value=50 if "Queso" in alimento else 150, step=10, key=f"{alimento}_alm")
+        total_kcal_dia += (info["kcal"] * cantidad) / 100
+        total_prot_dia += (info["prot"] * cantidad) / 100
+        cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
+    else:
+        cantidad = st.number_input(f"Unidades de {alimento} (Almuerzo):", min_value=0, value=1, step=1, key=f"{alimento}_alm")
+        total_kcal_dia += info["kcal"] * cantidad
+        total_prot_dia += info["prot"] * cantidad
+        cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
 
-st.header("📝 Registro por Comidas")
-procesar_bloque_comida("📸 Almuerzo", "almuerzo")
-st.markdown("---")
-procesar_bloque_comida("🥛 Merienda", "merienda")
 st.markdown("---")
 
+# Merienda
+st.subheader("🥛 Merienda")
+merienda_elegidos = st.multiselect("¿Qué sumaste en tu merienda?", list(base_alimentos.keys()), key="select_merienda")
+for alimento in merienda_elegidos:
+    info = base_alimentos[alimento]
+    if info["unidad"] == "100g":
+        cantidad = st.number_input(f"Gramos de {alimento} (Merienda):", min_value=0, value=50 if "Queso" in alimento else 150, step=10, key=f"{alimento}_mer")
+        total_kcal_dia += (info["kcal"] * cantidad) / 100
+        total_prot_dia += (info["prot"] * cantidad) / 100
+        cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
+    else:
+        cantidad = st.number_input(f"Unidades de {alimento} (Merienda):", min_value=0, value=1, step=1, key=f"{alimento}_mer")
+        total_kcal_dia += info["kcal"] * cantidad
+        total_prot_dia += info["prot"] * cantidad
+        cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
+
+st.markdown("---")
+
+# Registro Frutas
 st.subheader("🍎 Registro de Frutas")
 frutas = st.number_input("¿Cuántas frutas enteras comiste hoy?", min_value=0, value=0, step=1)
 total_kcal_dia += (frutas * 60)
 total_prot_dia += (frutas * 0.5)
+
 st.markdown("---")
 
-procesar_bloque_comida("📸 Cena", "cena")
+# Cena
+st.subheader("📸 Cena")
+cena_elegidos = st.multiselect("¿Qué sumaste en tu cena?", list(base_alimentos.keys()), key="select_cena")
+for alimento in cena_elegidos:
+    info = base_alimentos[alimento]
+    if info["unidad"] == "100g":
+        cantidad = st.number_input(f"Gramos de {alimento} (Cena):", min_value=0, value=50 if "Queso" in alimento else 150, step=10, key=f"{alimento}_cen")
+        total_kcal_dia += (info["kcal"] * cantidad) / 100
+        total_prot_dia += (info["prot"] * cantidad) / 100
+        cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
+    else:
+        cantidad = st.number_input(f"Unidades de {alimento} (Cena):", min_value=0, value=1, step=1, key=f"{alimento}_cen")
+        total_kcal_dia += info["kcal"] * cantidad
+        total_prot_dia += info["prot"] * cantidad
+        cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
+
 st.markdown("---")
 
 st.subheader("⚠️ Filtro de Reglas")
@@ -172,28 +201,7 @@ if st.button("Calcular y Registrar Día"):
     st.markdown("---")
     st.subheader(f"🤖 Análisis Específico del Coach IA para {nombre_usuario}:")
     
+    # Análisis de porciones individuales
     excesos_detectados = []
     if cantidades_totales.get("Huevo hervido (Unidad)", 0) > 3:
         cant_h = cantidades_totales["Huevo hervido (Unidad)"]
-        excesos_detectados.append(f"🥚 **Huevos ({int(cant_h)} unidades):** Te sobrepasaste. Deberías haber comido entre **2 y 3 unidades** como máximo. Ingerir tantos satura tu digestión.")
-    
-    for carne in ["Pollo (Pechuga/Muslo)", "Carne de Vaca (Cortes magros)", "Carne de Cerdo (Costillita/Bondiola)"]:
-        if cantidades_totales.get(carne, 0) > 400:
-            cant_c = cantidades_totales[carne]
-            excesos_detectados.append(f"🥩 **{carne} ({int(cant_c)}g):** Te excediste con la porción. Comer más de 400g aporta más proteína de la que asimilás. Tu porción ideal sería de **150g a 250g** por comida.")
-            
-    if cantidades_totales.get("Queso Cremoso / Por Salut / Mozzarella", 0) > 150 or cantidades_totales.get("Queso Rallado / Reggianito / Hebras", 0) > 80:
-        excesos_detectados.append(f"🧀 **Quesos:** Te pasaste con los lácteos grasos. Deberías limitar el queso rallado a **15g-30g** y el cremoso a **30g-50g**. El exceso suma muchas calorías ocultas.")
-
-    if frutas > 3:
-        excesos_detectados.append(f"🍎 **Frutas ({int(frutas)} unidades):** Te sobrepasaste. Comer más de 3 aporta exceso de fructosa (azúcar natural) que frena el déficit calórico. Lo ideal son **1 o 2 unidades** al día.")
-
-    if excesos_detectados:
-        st.error("🚨 **Análisis de porciones superadas hoy:**")
-        for exceso in excesos_detectados:
-            st.write(exceso)
-    else:
-        st.success("🎯 **¡Control de Porciones Perfecto!** No se detectaron excesos graves en ningún alimento. ¡Excelente balance!")
-
-    st.markdown("---")
-    if deficit_real < -500:
