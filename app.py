@@ -11,7 +11,7 @@ if "historial_progreso" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Ultra Estable v13.2 | Tu Entrenador Personal de Precisión IA")
+st.write("Versión Ultra Estable v13.3 | Tu Entrenador Personal de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -144,7 +144,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO (ESTRUCTURA ULTRA PLANA A PRUEBA DE FALLAS)
+# 6. 📊 BALANCE DIARIO 
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
@@ -166,13 +166,11 @@ if st.button("💾 Guardar y Comparar mi Día"):
     st.markdown("---")
     st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
     
-    # ALERTAS DE DEFICIT EN UNA SOLA LÍNEA PLANAS
-    if deficit_real > 1200: st.error(f"⚠️ ¡Cuidado {nombre_usuario}, estás comiendo muy poco! Hoy lograste un déficit de {int(deficit_real)} kcal. Te faltaron {int(calorias_faltantes)} kcal para tu meta ideal, que sería consumir {int(calorias_objetivo)} kcal en el día. ¡Mañana sumale volumen limpio con papa, batata o más carne magra!")
-    if deficit_real >= deficit_ideal and deficit_real <= 1200: st.success(f"🔥 ¡Excelente balance, {nombre_usuario}! Lograste un déficit de {int(deficit_real)} kcal. Estás en la zona perfecta: quemando grasa a full pero dándole la energía necesaria. ¡Camino dorado!")
-    if deficit_real < deficit_ideal and deficit_real >= -500: st.warning(f"⚠️ A ajustar un poquito, {nombre_usuario}: Hoy el déficit se quedó corto respecto a tu meta de -{deficit_ideal} kcal. Mañana intentá controlar un pelín más las porciones.")
-    if deficit_real < -500: st.error(f"⚠️ Superávit Calórico Crítico: Tus calorías superaron por mucho tu gasto. ¡Mañana achicamos los platos!")
+    if deficit_real > 1200: st.error(f"⚠️ ¡Cuidado {nombre_usuario}, estás comiendo muy poco! Hoy lograste un deficit de {int(deficit_real)} kcal. Te faltaron {int(calorias_faltantes)} kcal para tu meta ideal, que seria consumir {int(calorias_objetivo)} kcal en el día. ¡Mañana sumale volumen al plato con papa, batata o más carne magra!")
+    if deficit_real >= deficit_ideal and deficit_real <= 1200: st.success(f"🔥 ¡Excelente balance, {nombre_usuario}! Lograste un deficit de {int(deficit_real)} kcal. Estás en la zona perfecta. ¡Camino dorado!")
+    if deficit_real < deficit_ideal and deficit_real >= -500: st.warning(f"⚠️ A ajustar un poquito, {nombre_usuario}: Hoy el deficit se quedo corto respecto a tu meta de -{deficit_ideal} kcal. Mañana intentá controlar un pelín más las porciones.")
+    if deficit_real < -500: st.error(f"⚠️ Superavit Calórico Crítico: Tus calorías superaron por mucho tu gasto. ¡Mañana achicamos los platos!")
 
     st.markdown("---")
-    
-    # ALERTAS DE ALIMENTOS INDIVIDUALES DESGLOSADAS UNA POR UNA (CHAU ERRORES DE INDENTACION)
     if cantidades_totales.get("Huevo hervido (Unidad)", 0) > 3: st.error(f"🥚 Huevos ({int(cantidades_totales['Huevo hervido (Unidad)'])} unidades): Te sobrepasaste. Lo ideal son 2 o 3 unidades al día.")
+    if cantidades_totales.get("Pollo (Pechuga/Muslo)", 0) > 400: st.error(f"🥩 Pollo ({int(cantidades_totales['Pollo (Pechuga/Muslo)'])}g): Te excediste en la porción. Lo recomendado son 150g a 250g por comida.")
