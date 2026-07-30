@@ -11,7 +11,7 @@ if "historial_progreso" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Analítico v6.3 | Tu Entrenador de Precisión IA")
+st.write("Versión Coach Analítico v6.4 | Tu Entrenador de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -113,9 +113,9 @@ def procesar_bloque_comida(titulo_bloque, key_sufijo):
             info = base_alimentos[alimento]
             if info["unidad"] == "100g":
                 cantidad = st.number_input(f"Gramos de {alimento}:", min_value=0, value=50 if "Queso" in alimento else 150, step=10 if "Queso" in alimento else 50, key=f"{alimento}_{key_sufijo}")
-                total_kcal_dia += (info["kcal"] * quantitative := cantidad) / 100
-                total_prot_dia += (info["prot"] * quantitative) / 100
-                cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + quantitative
+                total_kcal_dia += (info["kcal"] * cantidad) / 100
+                total_prot_dia += (info["prot"] * cantidad) / 100
+                cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
             else:
                 cantidad = st.number_input(f"Unidades de {alimento}:", min_value=0, value=1, step=1, key=f"{alimento}_{key_sufijo}")
                 total_kcal_dia += info["kcal"] * cantidad
