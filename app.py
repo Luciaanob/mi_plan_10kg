@@ -5,13 +5,13 @@ import pandas as pd
 # Configuración de la página
 st.set_page_config(page_title="Mi Tracker Personal - Meta -10kg", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN (Guarda los días mientras no cierres la app)
+# CREAR MEMORIA DE SESIÓN
 if "historial_progreso" not in st.session_state:
     st.session_state["historial_progreso"] = []
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Historial v5.0 | Registro Diario de Progreso")
+st.write("Versión Coach Sincero v5.1 | Registro Diario de Progreso")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -105,7 +105,7 @@ def procesar_bloque_comida(titulo_bloque, key_sufijo):
             if info["unidad"] == "100g":
                 cantidad = st.number_input(f"Gramos de {alimento}:", min_value=0, value=50 if "Queso" in alimento else 150, step=10 if "Queso" in alimento else 50, key=f"{alimento}_{key_sufijo}")
                 total_kcal_dia += (info["kcal"] * cantidad) / 100
-                total_prot_dia += (info["prot"] * cantidad) / 100
+                total_prot_dia += (info["prot"] * carrot_factor := cantidad) / 100 if "Zanahoria" in alimento else (info["prot"] * cantidad) / 100
             else:
                 cantidad = st.number_input(f"Unidades de {alimento}:", min_value=0, value=1, step=1, key=f"{alimento}_{key_sufijo}")
                 total_kcal_dia += info["kcal"] * cantidad
@@ -135,14 +135,13 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE Y FUNCIÓN DE GUARDADO/DESCARGA
+# 6. 📊 BALANCE Y FUNCIÓN DE GUARDADO/DESCARGA (MEJORADO CON CRÍTICA SINCERA)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 if st.button("Calcular y Registrar Día"):
     gasto_total = int(bmr) + kcal_pasos
     deficit_real = gasto_total - total_kcal_dia
     
-    # AGREGAR AL HISTORIAL DE SESIÓN
     nuevo_registro = {
         "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
         "Usuario": nombre_usuario,
@@ -152,7 +151,6 @@ if st.button("Calcular y Registrar Día"):
         "Proteínas (g)": int(total_prot_dia),
         "Déficit (kcal)": int(deficit_real)
     }
-    # Evitar duplicados del mismo día en la misma sesión
     st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_registro["Fecha"]]
     st.session_state["historial_progreso"].append(nuevo_registro)
     
@@ -161,20 +159,32 @@ if st.button("Calcular y Registrar Día"):
     st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
     
     st.markdown("---")
-    st.subheader(f"🤖 Recomendaciones para {nombre_usuario}:")
-    if not sin_harina_azucar:
-        st.error("⚠️ ¡Atención! Hoy se escapó alguna harina o azúcar. ¡Mañana volvemos al 100% limpio!")
+    st.subheader(f"🤖 Recomendaciones de tu Coach IA para {nombre_usuario}:")
+    
+    # NUEVA LÓGICA DE DETECCIÓN DE SOBREPASO EXTREMO
+    if deficit_real > 1200:
+        st.error(f"🚨 **¡Cuidado, {nombre_usuario}! El déficit es peligrosamente alto ({int(deficit_real)} kcal).**  \nEsto suele pasar por dos motivos:  \n1. Comiste extremadamente poco hoy (lo cual va a destruir tu masa muscular y ralentizar tu metabolismo).  \n2. Hubo un error de tipeo al cargar las cantidades en la app.  \n*Consejo:* Si fue real, mañana asegurate de comer más volumen de comida limpia. Si fue un error, revisá los números de arriba.")
+    elif deficit_real >= deficit_ideal:
+        st.success(f"🔥 ¡Espectacular! Lograste un déficit de {int(deficit_real)} kcal, cumpliendo tu meta ideal de -{deficit_ideal} kcal.")
     else:
-        st.success("✅ ¡Disciplina de Acero! Mantuviste las harinas y azúcares en CERO.")
+        st.warning(f"⚠️ Hoy tu déficit fue menor al ideal recomendado. Intentá ajustar un poco más las porciones o meter más pasos mañana.")
 
-# NUEVO: MOSTRAR HISTORIAL REGISTRADO Y BOTÓN DE DESCARGA EXCEL/CSV
+    if not sin_harina_azucar:
+        st.error(f"⚠️ **Reglas:** Hoy se escapó alguna harina o azúcar. ¡Mañana volvemos al camino limpio!")
+    else:
+        st.success(f"✅ **Reglas:** Mantuviste las harinas y azúcares en CERO absoluto.")
+
+    meta_proteina = peso_actual * 1.2
+    if total_prot_dia < meta_proteina:
+        st.warning(f"🍗 **Proteína baja:** Llegaste a {int(total_prot_dia)}g. Tu cuerpo te pide {int(meta_proteina)}g. Mañana reforzá sumando carnes, huevos o Whey Protein.")
+
+# MOSTRAR HISTORIAL
 if st.session_state["historial_progreso"]:
     st.markdown("---")
     st.header("🗂️ Historial Guardado (Esta Sesión)")
     df_historial = pd.DataFrame(st.session_state["historial_progreso"])
     st.dataframe(df_historial)
     
-    # Botón para descargar el archivo y no perderlo nunca
     csv = df_historial.to_csv(index=False).encode('utf-8')
     st.download_button(
         label="📥 Descargar todo mi Historial (.csv)",
@@ -182,4 +192,3 @@ if st.session_state["historial_progreso"]:
         file_name=f"historial_peso_{nombre_usuario}.csv",
         mime="text/csv",
     )
-    st.info("💡 **Tip de oro:** Antes de cerrar la página, dale al botón de descargar. Así guardás tu progreso en el celu y podés ver tus datos acumulados siempre.")
