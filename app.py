@@ -11,7 +11,7 @@ if "historial_progreso" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Ultra Estable v15.0 | Tu Entrenador Personal de Precisión IA")
+st.write("Versión Ultra Estable v15.1 | Tu Entrenador Personal de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -101,7 +101,7 @@ st.header("📝 Registro por Comidas")
 total_kcal_dia = 0
 total_prot_dia = 0
 cantidades_totales = {}
-kcal_por_alimento = {} # Guarda las kcal acumuladas por tipo de alimento
+kcal_por_alimento = {}
 
 def procesar_bloque_comida(titulo_bloque, key_sufijo):
     global total_kcal_dia, total_prot_dia, cantidades_totales, kcal_por_alimento
@@ -151,7 +151,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO CON AUDITORÍA DE EXCESOS CALÓRICOS
+# 6. 📊 BALANCE DIARIO (ALINEACIÓN REPARADA)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
@@ -172,12 +172,11 @@ if st.button("💾 Guardar y Comparar mi Día"):
     st.markdown("---")
     st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
     
-    # NUEVA LOGICA DE ANALISIS DE CALORÍAS EXCESIVAS REQUERIDA POR LUCIANO
+    # --- LOGICA CORREGIDA CON ESPACIOS PERFECTOS EXIGIDOS POR PYTHON ---
     if total_kcal_dia > calorias_objetivo:
         kcal_sobrepasadas = total_kcal_dia - calorias_objetivo
-        # Detecta cuál fue el alimento que más calorías sumó hoy
         alimento_mas_pesado = max(kcal_por_alimento, key=kcal_por_alimento.get) if kcal_por_alimento else "Ninguno"
         kcal_del_mas_pesado = int(kcal_por_alimento[alimento_mas_pesado]) if kcal_por_alimento else 0
-        st.error(f"🚨 **¡Cuidado {nombre_usuario}! Te pasaste de tus calorías.** Tu límite máximo saludable para mantener el déficit hoy eran {int(calorias_objetivo)} kcal y consumiste {int(total_kcal_dia)} kcal. **Te sobrepasaste por {int(kcal_sobrepasadas)} kcal.**  \n🔍 **Dónde estuvo el exceso:** El registro indica que tu mayor bomba calórica del día fue **{alimento_mas_pesado}** sumando un total de **{kcal_del_mas_pesado} kcal**. ¡Mañana controlamos mejor esa porción y volvemos al ruedo!")
+        st.error(f"🚨 **¡Cuidado {nombre_usuario}! Te pasaste de tus calorías.** Tu límite máximo saludable eran {int(calorias_objetivo)} kcal y consumiste {int(total_kcal_dia)} kcal. **Te sobrepasaste por {int(kcal_sobrepasadas)} kcal.** \n\n🔍 **Dónde estuvo el exceso:** Tu mayor bomba calórica del día fue **{alimento_mas_pesado}** sumando **{kcal_del_mas_pesado} kcal**. ¡Mañana controlamos mejor esa porción!")
     
-    if deficit_real > 1200: 
+    if deficit_real > 1200:
