@@ -11,7 +11,7 @@ if "historial_progreso" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Maestro Premium v23.0 | Tu Entrenador de Precisión IA")
+st.write("Versión Maestro Premium v24.0 | Tu Entrenador de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -122,7 +122,7 @@ def procesar_bloque_comida(titulo_bloque, key_sufijo):
                 cantidad = st.number_input(f"Unidades de {alimento} ({titulo_bloque}):", min_value=0, value=1, step=1, key=f"{alimento}_{key_sufijo}")
                 kcal_calculadas = info["kcal"] * cantidad
                 total_kcal_dia += kcal_calculadas
-                total_prot_dia += info["prot"] * cantidad
+                total_prot_dia += (info["prot"] * cantidad)
                 cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
                 kcal_por_alimento[alimento] = kcal_por_alimento.get(alimento, 0) + kcal_calculadas
 
@@ -151,7 +151,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO (LÓGICA MATEMÁTICA PURA)
+# 6. 📊 BALANCE DIARIO (DISEÑO ULTRA PLANO ANTI-FALLAS)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
@@ -163,7 +163,7 @@ meta_proteina = peso_actual * 1.2
 st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
 st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
 
-# Guardado directo en un solo renglón plano
+# Guardado directo al presionar el botón
 if st.button("💾 Guardar y Comparar mi Día"):
     st.session_state["historial_progreso"].append({"Fecha": fecha_seleccionada.strftime('%d/%m/%Y'), "Usuario": nombre_usuario, "Peso (kg)": peso_actual, "Pasos": pasos, "Consumo (kcal)": int(total_kcal_dia), "Proteínas (g)": int(total_prot_dia), "Déficit (kcal)": int(deficit_real)})
 
@@ -171,14 +171,15 @@ st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
 st.markdown("---")
 
 # ==========================================
-# 🤖 EL CONSEJO DEL COACH PARA BIEN O PARA MAL (100% FIJO EN PANTALLA EN LÍNEA PLANAS)
+# 🤖 SECCIÓN DE CONSEJOS DEL COACH EN VIVO (MÁXIMA PRECISIÓN)
 # ==========================================
 st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
 
-# Detector de excesos calóricos
+# 🚨 ADVERTENCIA SI COMÉS DE MÁS
 if total_kcal_dia > calorias_objetivo:
     alimento_mas_pesado = max(kcal_por_alimento, key=kcal_por_alimento.get) if kcal_por_alimento else "Ninguno"
     st.error(f"🚨 **¡Cuidado {nombre_usuario}! Te pasaste de tus calorías.** Tu límite máximo saludable hoy eran {int(calorias_objetivo)} kcal y consumiste {int(total_kcal_dia)} kcal. **Te sobrepasaste por {int(total_kcal_dia - calorias_objetivo)} kcal.** \n\n🔍 **Dónde estuvo el exceso:** Tu mayor bomba calórica del día fue **{alimento_mas_pesado}** sumando un total de **{int(kcal_por_alimento.get(alimento_mas_pesado, 0))} kcal**. ¡Mañana controlamos mejor esa porción!")
 
-# Resto de avisos en formato de renglón directo sin riesgos de espacios
+# ADVERTENCIA SI COMÉS DE MENOS PELIGROSO
 if deficit_real > 1200: st.error(f"⚠️ ¡Cuidado {nombre_usuario}, estás comiendo muy poco! Hoy lograste un deficit de {int(deficit_real)} kcal. Te faltaron {int(deficit_real - deficit_ideal)} kcal para tu meta ideal, que seria consumir {int(calorias_objetivo)} kcal en el día. ¡Mañana sumale volumen al plato con papa, batata o más carne magra!")
+
