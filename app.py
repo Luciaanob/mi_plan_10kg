@@ -5,15 +5,13 @@ import pandas as pd
 # Configuración de la página
 st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN (Fija para comparar el día a día)
+# CREAR MEMORIA DE SESIÓN COMPARTIDA
 if "historial_progreso" not in st.session_state:
     st.session_state["historial_progreso"] = []
-if "registro_exitoso" not in st.session_state:
-    st.session_state["registro_exitoso"] = False
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Coach Premium v20.0 | Tu Entrenador de Precisión IA")
+st.write("Versión Maestro Premium v21.0 | Tu Entrenador de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -153,22 +151,23 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO (LÓGICA INTERNA REPARADA)
+# 6. 📊 BALANCE DIARIO (LÓGICA LINEAL PURA)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
 gasto_total = int(bmr) + kcal_pasos
 deficit_real = gasto_total - total_kcal_dia
 calorias_objetivo = gasto_total - deficit_ideal
-calorias_faltantes = deficit_real - deficit_ideal
 meta_proteina = peso_actual * 1.2
 
 st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
 st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
 
-# AL TOCAR EL BOTÓN, PROCESA Y ACTIVA LOS CONSEJOS EN PANTALLA
-if st.button("💾 Guardar y Comparar mi Día"):
-    nuevo_dia = {
+# BOTÓN MAESTRO DE ACCIÓN DIRECTA SIN LLAVES ANIDADAS
+guardar_gatillado = st.button("💾 Guardar y Comparar mi Día")
+
+if guardar_gatillado:
+    st.session_state["historial_progreso"].append({
         "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
         "Usuario": nombre_usuario,
         "Peso (kg)": peso_actual,
@@ -176,17 +175,20 @@ if st.button("💾 Guardar y Comparar mi Día"):
         "Consumo (kcal)": int(total_kcal_dia),
         "Proteínas (g)": int(total_prot_dia),
         "Déficit (kcal)": int(deficit_real)
-    }
-    st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_dia["Fecha"]]
-    st.session_state["historial_progreso"].append(nuevo_dia)
-    st.session_state["registro_exitoso"] = True
+    })
 
-# SI SE APRETÓ EL BOTÓN, SE MUESTRA EL DESGLOSE COMPLETO EN LA PANTALLA MIENTRAS DURE LA APP
-if st.session_state["registro_exitoso"]:
-    st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
-    st.markdown("---")
-    st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
-    
-    # ⚠️ REQUERIMIENTO LUCIANO: Alerta si comés de más calculando diferencia y alimento pesado
-    if total_kcal_dia > calorias_objetivo:
-        alimento_mas_pesado = max(kcal_por_alimento, key=kcal_por_alimento.get) if kcal_por_alimento else "Ninguno"
+st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
+st.markdown("---")
+
+# ==========================================
+# 🤖 EL CONSEJO DEL COACH PARA BIEN O PARA MAL (OBLIGATORIO Y FIJO EN PANTALLA)
+# ==========================================
+st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
+
+# 🚨 ADVERTENCIA SI COMÉS DE MÁS (REQUERIMIENTO PRINCIPAL LUCIANO)
+if total_kcal_dia > calorias_objetivo:
+    alimento_mas_pesado = max(kcal_por_alimento, key=kcal_por_alimento.get) if kcal_por_alimento else "Ninguno"
+    st.error(f"🚨 **¡Cuidado {nombre_usuario}! Te pasaste de tus calorías.** Tu límite máximo saludable hoy eran {int(calorias_objetivo)} kcal y consumiste {int(total_kcal_dia)} kcal. **Te sobrepasaste por {int(total_kcal_dia - calorias_objetivo)} kcal.** \n\n🔍 **Dónde estuvo el exceso:** Tu mayor bomba calórica del día fue **{alimento_mas_pesado}** sumando un total de **{int(kcal_por_alimento.get(alimento_mas_pesado, 0))} kcal**. ¡Mañana controlamos mejor esa porción!")
+
+# ADVERTENCIA SI COMÉS DE MENOS PELIGROSO
+if deficit_real > 1200:
