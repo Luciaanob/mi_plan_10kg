@@ -129,3 +129,12 @@ if st.sidebar.button("🔄 Reiniciar Progreso del Día"):
     st.session_state['volumen_ml_totales'] = 0.0
     st.rerun()
 
+# --- AGREGÁ SOLO ESTO AL FINAL DE TU ARCHIVO ACTUAL ---
+try:
+    # Esto busca de forma automática si tu barra llegó al 100%
+    if 'barra_progreso' in locals() and barra_progreso >= 1.0:
+        st.balloons()
+        st.success("¡Felicitaciones! Cumpliste con tus requisitos de consumo de calorías para hoy. 🎈🎉")
+except:
+    pass
+
