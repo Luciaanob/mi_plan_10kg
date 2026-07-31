@@ -1,140 +1,196 @@
 import streamlit as st
+import datetime
 import pandas as pd
 
-# 1. CONFIGURACIÓN DE LA PÁGINA
-st.set_page_config(page_title="App de Nutrición", page_icon="🍏", layout="wide")
+# Configuración de la página
+st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
-# 2. INICIALIZACIÓN DEL ESTADO DE LA SESIÓN (SESSION STATE)
-if 'calorias_totales' not in st.session_state:
-    st.session_state['calorias_totales'] = 0.0
-if 'unidades_totales_gr' not in st.session_state:
-    st.session_state['unidades_totales_gr'] = 0.0
-if 'volumen_ml_totales' not in st.session_state:
-    st.session_state['volumen_ml_totales'] = 0.0
-if 'objetivo_calorias' not in st.session_state:
-    st.session_state['objetivo_calorias'] = 2000.0  # Meta predeterminada de calorías
+# CREAR MEMORIA DE SESIÓN (Local, estable y sin fallas de internet)
+if "historial_progreso" not in st.session_state:
+    st.session_state["historial_progreso"] = []
 
-# 3. TÍTULO PRINCIPAL DE LA APP
-st.markdown("<h1 style='text-align: center;'>🍏 App de Nutrición</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center;'>Controle su consumo de alimentos y calorías</h3>", unsafe_allow_html=True)
-st.write("---")
+# TÍTULO PERSONALIZADO
+st.title("💪 Meta -10kg by Luciano Bravo")
+st.write("Versión Ultra Estable v14.0 | Tu Entrenador Personal de Precisión IA")
 
-# 4. MENÚ LATERAL INTERACTIVO
-st.sidebar.header("📊 Panel de Control")
-opcion_menu = st.sidebar.selectbox(
-    "Seleccione una opción del menú:", 
-    ["Registro por alimentos", "Gráficos de Progreso", "Búsqueda por producto", "Recomendaciones con IA"]
-)
+# ==========================================
+# 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
+# ==========================================
+st.header("📅 Identificación y Fecha")
+nombre_usuario = st.text_input("¿Cómo querés que te llame la app?:", value="Luciano Bravo")
+fecha_seleccionada = st.date_input("¿Qué día querés registrar?", datetime.date.today())
+st.write(f"Hola **{nombre_usuario}**, registrando para el día: **{fecha_seleccionada.strftime('%d/%m/%Y')}**")
+st.markdown("---")
 
-# Configurar meta diaria desde la barra lateral
-st.session_state['objetivo_calorias'] = st.sidebar.number_input(
-    "Definir Meta de Calorías Diarias:", 
-    min_value=500.0, 
-    max_value=5000.0, 
-    value=st.session_state['objetivo_calorias'], 
-    step=50.0
-)
+# ==========================================
+# 2. 🧬 PERFIL CORPORAL ABIERTO POR DEFECTO
+# ==========================================
+with st.expander(f"🧬 Perfil Corporal de {nombre_usuario}", expanded=True):
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        genero = st.radio("Seleccioná tu género:", ("Hombre", "Mujer"))
+        peso_inicial = st.number_input("¿Peso Inicial? (Primer día):", min_value=40.0, max_value=200.0, value=96.0, step=0.1)
+        peso_actual = st.number_input("Ingresá tu peso de hoy (kg):", min_value=40.0, max_value=200.0, value=95.0, step=0.1)
+    with col_p2:
+        altura = st.number_input("Ingresá tu altura (metros):", min_value=1.20, max_value=2.30, value=1.77, step=0.01)
+        edad = st.number_input("Ingresá tu edad:", min_value=15, max_value=100, value=39, step=1)
 
-# 5. DICCIONARIO DE ALIMENTOS Y EQUIVALENCIAS
-alimentos_equivalencias = {
-    "Leche entera (taza)": {"cant": 200, "unid": "ml", "cal": 120, "prot": 6, "gr": 6},
-    "Leche descremada (taza)": {"cant": 200, "unid": "ml", "cal": 80, "prot": 6, "gr": 0},
-    "Yogur entero (pote)": {"cant": 120, "unid": "gr", "cal": 90, "prot": 4, "gr": 4},
-    "Queso blanco (cucharada)": {"cant": 30, "unid": "gr", "cal": 60, "prot": 3, "gr": 4},
-    "Huevo (unidad)": {"cant": 50, "unid": "gr", "cal": 75, "prot": 6, "gr": 5},
-    "Carne de vaca (bife)": {"cant": 150, "unid": "gr", "cal": 250, "prot": 30, "gr": 15},
-    "Pechuga de pollo (unidad)": {"cant": 150, "unid": "gr", "cal": 165, "prot": 31, "gr": 4},
-    "Arroz cocido (taza)": {"cant": 150, "unid": "gr", "cal": 200, "prot": 4, "gr": 0},
-    "Fideos cocidos (taza)": {"cant": 150, "unid": "gr", "cal": 220, "prot": 5, "gr": 1},
-    "Pan lactal (rodaja)": {"cant": 25, "unid": "gr", "cal": 65, "prot": 2, "gr": 1},
-    "Manzana (unidad)": {"cant": 150, "unid": "gr", "cal": 80, "prot": 0, "gr": 0},
-    "Banana (unidad)": {"cant": 100, "unid": "gr", "cal": 90, "prot": 1, "gr": 0},
-    "Aceite de girasol (cucharada)": {"cant": 10, "unid": "ml", "cal": 90, "prot": 0, "gr": 10}
+if genero == "Hombre":
+    bmr = 66.47 + (13.75 * peso_inicial) + (5.00 * (altura * 100)) - (6.75 * edad)
+    deficit_ideal = 700  
+else:
+    bmr = 655.1 + (9.56 * peso_inicial) + (1.85 * (altura * 100)) - (4.68 * edad)
+    deficit_ideal = 500  
+
+st.info(f"🧬 **{nombre_usuario}**, tu cuerpo quema **{int(bmr)} kcal** al día **solo por existir, respirar y estar quieto en la cama**. ¡Esa es tu base antes de meter un solo paso! \n\n🎯 Para bajar esos 10kg cuidando tus músculos, tu déficit ideal recomendado es de **-{deficit_ideal} kcal** diarios.")
+
+# ==========================================
+# 3. ⚖️ PROGRESO DE PESO
+# ==========================================
+meta_peso = peso_inicial - 10.0
+kilos_bajados = peso_inicial - peso_actual
+
+if kilos_bajados > 0:
+    st.success(f"🎉 ¡Ya bajaste **{kilos_bajados:.1f} kg** desde que empezaste!")
+    st.progress(min(kilos_bajados / 10.0, 1.0))
+    st.write(f"Te faltan **{peso_actual - meta_peso:.1f} kg** para tu meta final de {meta_peso:.1f} kg.")
+else:
+    st.info(f"Punto de partida: {peso_inicial} kg. ¡Hoy arranca el cambio!")
+
+# Gráfico interactivo
+st.subheader("📉 Tu Curva de Descenso Histórica")
+datos_peso = pd.DataFrame({"Días": ["Inicio", "Actual"], "Peso (kg)": [peso_inicial, peso_actual]})
+st.line_chart(datos_peso.set_index("Días"))
+st.markdown("---")
+
+# ==========================================
+# 4. 🚶‍♂️ PASOS Y HIDRATACIÓN
+# ==========================================
+st.header("🚶‍♂️ Actividad del Día")
+pasos = st.number_input("¿Cuántos pasos hiciste hoy?", min_value=0, value=14000, step=500)
+kcal_pasos = int(pasos * 0.055)
+
+st.subheader("💧 Control de Hidratación")
+vasos_agua = st.slider("¿Cuántos vasos de agua (250ml) tomaste hoy?", 0, 12, 4)
+st.markdown("---")
+
+# ==========================================
+# 5. 🥑 BASE DE DATOS DE ALIMENTOS COMPLETA
+# ==========================================
+base_alimentos = {
+    "Pollo (Pechuga/Muslo)": {"kcal": 165, "prot": 31, "unidad": "100g"},
+    "Carne de Vaca (Cortes magros)": {"kcal": 200, "prot": 26, "unidad": "100g"},
+    "Carne de Cerdo (Costillita/Bondiola)": {"kcal": 240, "prot": 27, "unidad": "100g"},
+    "Pescado de mar (Merluza/Gatuzo)": {"kcal": 90, "prot": 19, "unidad": "100g"},
+    "Atún al natural (Lata)": {"kcal": 116, "prot": 26, "unidad": "100g"},
+    "Huevo hervido (Unidad)": {"kcal": 70, "prot": 6, "unidad": "unidad"},
+    "Queso Cremoso / Por Salut / Mozzarella": {"kcal": 260, "prot": 20, "unidad": "100g"},
+    "Queso Rallado / Reggianito / Hebras": {"kcal": 390, "prot": 35, "unidad": "100g"},
+    "Queso crema / Untable descremado": {"kcal": 100, "prot": 7, "unidad": "100g"},
+    "Leche descremada (Vaso 200ml)": {"kcal": 90, "prot": 7, "unidad": "unidad"},
+    "Whey Protein (1 scoop)": {"kcal": 120, "prot": 24, "unidad": "unidad"},
+    "Papa o Batata hervida": {"kcal": 87, "prot": 2, "unidad": "100g"},
+    "Calabaza/Zapallo al horno o puré": {"kcal": 30, "prot": 1, "unidad": "100g"},
+    "Lentejas/Garbanzos/Porotos": {"kcal": 116, "prot": 9, "unidad": "100g"},
+    "Quinoa cocida": {"kcal": 120, "prot": 4, "unidad": "100g"},
+    "Brócoli/Zanahoria/Tomate/Zucchini": {"kcal": 30, "prot": 2, "unidad": "100g"},
+    "Verduras de hoja (Lechuga/Acelga)": {"kcal": 15, "prot": 1, "unidad": "100g"},
 }
 
-# 6. LÓGICA DE LAS VISTAS SEGÚN EL MENÚ
-if opcion_menu == "Registro por alimentos":
-    st.header("📋 Registro Diario de Alimentos")
+st.header("📝 Registro por Comidas")
+total_kcal_dia = 0
+total_prot_dia = 0
+cantidades_totales = {}
+
+def procesar_bloque_comida(titulo_bloque, key_sufijo):
+    global total_kcal_dia, total_prot_dia, cantidades_totales
+    st.subheader(titulo_bloque)
+    elegidos = st.multiselect(f"¿Qué sumaste en tu {titulo_bloque.lower()}?", list(base_alimentos.keys()), key=f"select_{key_sufijo}")
     
-    col1, col2 = st.columns(2)
+    if elegidos:
+        for alimento in elegidos:
+            info = base_alimentos[alimento]
+            if info["unidad"] == "100g":
+                cantidad = st.number_input(f"Gramos de {alimento} ({titulo_bloque}):", min_value=0, value=50 if "Queso" in alimento else 150, step=10, key=f"{alimento}_{key_sufijo}")
+                total_kcal_dia += (info["kcal"] * cantidad) / 100
+                total_prot_dia += (info["prot"] * cantidad) / 100
+                cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
+            else:
+                cantidad = st.number_input(f"Unidades de {alimento} ({titulo_bloque}):", min_value=0, value=1, step=1, key=f"{alimento}_{key_sufijo}")
+                total_kcal_dia += info["kcal"] * cantidad
+                total_prot_dia += info["prot"] * cantidad
+                cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
+
+procesar_bloque_comida("📸 Almuerzo", "almuerzo")
+st.markdown("---")
+procesar_bloque_comida("🥛 Merienda", "merienda")
+st.markdown("---")
+
+st.subheader("🍎 Registro de Frutas")
+frutas = st.number_input("¿Cuántas frutas enteras comiste hoy?", min_value=0, value=0, step=1)
+total_kcal_dia += (frutas * 60)
+total_prot_dia += (frutas * 0.5)
+st.markdown("---")
+
+procesar_bloque_comida("📸 Cena", "cena")
+st.markdown("---")
+
+st.subheader("⚠️ Filtro de Reglas")
+sin_harina_azucar = st.checkbox("❌ Confirmo que comí CERO Harinas y Cero Azúcares hoy")
+
+st.header("⏱️ Control de Ayuno (14hs)")
+hora_cena = st.time_input("¿A qué hora terminás de cenar?", datetime.time(22, 0))
+hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + datetime.timedelta(hours=14))
+st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
+
+# ==========================================
+# 6. 📊 BALANCE DIARIO
+# ==========================================
+st.header("📊 Tu Balance del Día")
+
+gasto_total = int(bmr) + kcal_pasos
+deficit_real = gasto_total - total_kcal_dia
+calorias_objetivo = gasto_total - deficit_ideal
+calorias_faltantes = deficit_real - deficit_ideal
+meta_proteina = peso_actual * 1.2
+
+st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
+st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
+
+if st.button("💾 Guardar y Comparar mi Día"):
+    nuevo_registro = {
+        "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
+        "Usuario": nombre_usuario,
+        "Peso (kg)": peso_actual,
+        "Pasos": pasos,
+        "Consumo (kcal)": int(total_kcal_dia),
+        "Proteínas (g)": int(total_prot_dia),
+        "Déficit (kcal)": int(deficit_real)
+    }
+    st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_registro["Fecha"]]
+    st.session_state["historial_progreso"].append(nuevo_registro)
     
-    with col1:
-        alimento_seleccionado = st.selectbox("Seleccione el alimento consumido:", list(alimentos_equivalencias.keys()))
-        porciones = st.number_input("Cantidad de porciones/unidades:", min_value=0.1, max_value=10.0, value=1.0, step=0.1)
-        
-        if st.button("Añadir Alimento al Día ➕"):
-            datos_alimento = alimentos_equivalencias[alimento_seleccionado]
-            
-            # Calcular valores según las porciones ingeridas
-            calorias_ganadas = datos_alimento["cal"] * porciones
-            peso_ganado = datos_alimento["cant"] * porciones if datos_alimento["unid"] == "gr" else 0
-            volumen_ganado = datos_alimento["cant"] * porciones if datos_alimento["unid"] == "ml" else 0
-            
-            # Sumar al estado general
-            st.session_state['calorias_totales'] += calorias_ganadas
-            st.session_state['unidades_totales_gr'] += peso_ganado
-            st.session_state['volumen_ml_totales'] += volumen_ganado
-            st.success(f"Se añadieron {calorias_ganadas:.1f} kcal con éxito.")
+    st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
+    st.markdown("---")
+    st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
+    
+    if deficit_real > 1200:
+        st.error(f"⚠️ ¡Cuidado {nombre_usuario}, estás comiendo muy poco! Hoy lograste un déficit de {int(deficit_real)} kcal. Te faltaron {int(calorias_faltantes)} kcal para tu meta ideal, que sería consumir {int(calorias_objetivo)} kcal en el día. ¡Mañana sumale volumen al plato con papa, batata o más carne magra!")
+    else:
+        st.success(f"🔥 ¡Excelente balance, {nombre_usuario}! Estás haciendo las cosas impecable.")
 
-    with col2:
-        st.subheader("Resumen de Consumo Actual")
-        st.metric("Calorías Totales", f"{st.session_state['calorias_totales']:.1f} kcal")
-        st.metric("Total Peso Alimentos", f"{st.session_state['unidades_totales_gr']:.1f} gr")
-        st.metric("Total Líquidos", f"{st.session_state['volumen_ml_totales']:.1f} ml")
+    st.markdown("---")
+    if cantidades_totales.get("Huevo hervido (Unidad)", 0) > 3: st.error(f"🥚 Huevos ({int(cantidades_totales['Huevo hervido (Unidad)'])} unidades): Te sobrepasaste. Lo ideal son 2 o 3 unidades al día.")
+    if not sin_harina_azucar: st.error(f"🚨 ¡Atención! Hoy se escapó alguna harina o azúcar. ¡Mañana volvemos al camino 100% limpio!")
+    else: st.success(f"✅ ¡Disciplina impecable! Mantuviste las harinas y azúcares en CERO absoluto hoy.")
 
-elif opcion_menu == "Gráficos de Progreso":
-    st.header("📉 Estadísticas y Gráficos")
-    st.info("Aquí verás el comportamiento de tus consumos mediante gráficos dinámicos.")
-    # Datos simulados para demostración gráfica
-    df_progreso = pd.DataFrame({
-        'Métricas': ['Gramos Totales', 'Mililitros Totales'],
-        'Valores': [st.session_state['unidades_totales_gr'], st.session_state['volumen_ml_totales']]
-    })
-    st.bar_chart(df_progreso.set_index('Métricas'))
+# ==========================================
+# 7. 🗂️ SECCIÓN DE COMPARACIÓN TOTALMENTE FIJA (A PRUEBA DE ERRORES)
+# ==========================================
+st.markdown("---")
+st.header("🗂️ Tabla de Comparación Semanal (Historial Diario)")
+st.write("Acá abajo vas a ver la lista de todos tus días guardados para comparar tu progreso:")
 
-elif opcion_menu == "Búsqueda por producto":
-    st.header("🔍 Buscador de Equivalencias")
-    busqueda = st.text_input("Escriba el nombre de un alimento para buscar:")
-    if busqueda:
-        resultados = {k: v for k, v in alimentos_equivalencias.items() if busqueda.lower() in k.lower()}
-        if resultados:
-            st.write(resultados)
-        else:
-            st.warning("No se encontraron coincidencias para ese alimento.")
-
-elif opcion_menu == "Recomendaciones con IA":
-    st.header("🤖 Asistente de Nutrición Inteligente")
-    st.write("Tu consumo actual de calorías es óptimo para mantener tus metas según tus indicadores.")
-
-# 7. REVISAR SI SE CUMPLIERON REQUISITOS DIARIOS (BARRA DE PROGRESO Y FESTEJO)
-st.write("---")
-st.subheader("🎯 Progreso hacia la Meta Diaria")
-
-# Calcular porcentaje de progreso (máximo 1.0 que equivale al 100%)
-porcentaje_progreso = min(st.session_state['calorias_totales'] / st.session_state['objetivo_calorias'], 1.0)
-
-# Mostrar barra de progreso visual
-st.progress(porcentaje_progreso)
-st.write(f"Has alcanzado el **{porcentaje_progreso * 100:.1f}%** de tu meta diaria.")
-
-# --- COMPROBACIÓN REQUISITO: FESTEJO DE GLOBOS ---
-if porcentaje_progreso >= 1.0:
-    st.balloons()
-    st.success("¡Felicitaciones! Cumpliste con tus requisitos de consumo de calorías para hoy. 🎈🎉")
-
-# Botón para reiniciar el día en la barra lateral
-if st.sidebar.button("🔄 Reiniciar Progreso del Día"):
-    st.session_state['calorias_totales'] = 0.0
-    st.session_state['unidades_totales_gr'] = 0.0
-    st.session_state['volumen_ml_totales'] = 0.0
-    st.rerun()
-
-# --- AGREGÁ SOLO ESTO AL FINAL DE TU ARCHIVO ACTUAL ---
-try:
-    # Esto busca de forma automática si tu barra llegó al 100%
-    if 'barra_progreso' in locals() and barra_progreso >= 1.0:
-        st.balloons()
-        st.success("¡Felicitaciones! Cumpliste con tus requisitos de consumo de calorías para hoy. 🎈🎉")
-except:
-    pass
-
+# Muestra la tabla directamente convirtiendo la lista de sesión
+df_historial = pd.DataFrame(st.session_state["historial_progreso"])
+st.dataframe(df_historial)
