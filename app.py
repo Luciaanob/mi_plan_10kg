@@ -5,13 +5,13 @@ import pandas as pd
 # Configuración de la página
 st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN COMPARTIDA
+# CREAR MEMORIA DE SESIÓN (Local, estable y sin fallas de internet)
 if "historial_progreso" not in st.session_state:
     st.session_state["historial_progreso"] = []
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Maestro Premium v24.0 | Tu Entrenador de Precisión IA")
+st.write("Versión Ultra Estable v14.0 | Tu Entrenador Personal de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -57,7 +57,7 @@ if kilos_bajados > 0:
 else:
     st.info(f"Punto de partida: {peso_inicial} kg. ¡Hoy arranca el cambio!")
 
-# Gráfico interactivo de peso
+# Gráfico interactivo
 st.subheader("📉 Tu Curva de Descenso Histórica")
 datos_peso = pd.DataFrame({"Días": ["Inicio", "Actual"], "Peso (kg)": [peso_inicial, peso_actual]})
 st.line_chart(datos_peso.set_index("Días"))
@@ -71,11 +71,11 @@ pasos = st.number_input("¿Cuántos pasos hiciste hoy?", min_value=0, value=1400
 kcal_pasos = int(pasos * 0.055)
 
 st.subheader("💧 Control de Hidratación")
-vasos_agua = st.slider("¿Cuántos vasos de agua pura (250ml) tomaste hoy?", 0, 12, 4)
+vasos_agua = st.slider("¿Cuántos vasos de agua (250ml) tomaste hoy?", 0, 12, 4)
 st.markdown("---")
 
 # ==========================================
-# 5. 🥑 BASE DE DATOS DE ALIMENTOS COMPLETA 
+# 5. 🥑 BASE DE DATOS DE ALIMENTOS COMPLETA
 # ==========================================
 base_alimentos = {
     "Pollo (Pechuga/Muslo)": {"kcal": 165, "prot": 31, "unidad": "100g"},
@@ -101,10 +101,9 @@ st.header("📝 Registro por Comidas")
 total_kcal_dia = 0
 total_prot_dia = 0
 cantidades_totales = {}
-kcal_por_alimento = {}
 
 def procesar_bloque_comida(titulo_bloque, key_sufijo):
-    global total_kcal_dia, total_prot_dia, cantidades_totales, kcal_por_alimento
+    global total_kcal_dia, total_prot_dia, cantidades_totales
     st.subheader(titulo_bloque)
     elegidos = st.multiselect(f"¿Qué sumaste en tu {titulo_bloque.lower()}?", list(base_alimentos.keys()), key=f"select_{key_sufijo}")
     
@@ -113,18 +112,14 @@ def procesar_bloque_comida(titulo_bloque, key_sufijo):
             info = base_alimentos[alimento]
             if info["unidad"] == "100g":
                 cantidad = st.number_input(f"Gramos de {alimento} ({titulo_bloque}):", min_value=0, value=50 if "Queso" in alimento else 150, step=10, key=f"{alimento}_{key_sufijo}")
-                kcal_calculadas = (info["kcal"] * cantidad) / 100
-                total_kcal_dia += kcal_calculadas
+                total_kcal_dia += (info["kcal"] * cantidad) / 100
                 total_prot_dia += (info["prot"] * cantidad) / 100
                 cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
-                kcal_por_alimento[alimento] = kcal_por_alimento.get(alimento, 0) + kcal_calculadas
             else:
                 cantidad = st.number_input(f"Unidades de {alimento} ({titulo_bloque}):", min_value=0, value=1, step=1, key=f"{alimento}_{key_sufijo}")
-                kcal_calculadas = info["kcal"] * cantidad
-                total_kcal_dia += kcal_calculadas
-                total_prot_dia += (info["prot"] * cantidad)
+                total_kcal_dia += info["kcal"] * cantidad
+                total_prot_dia += info["prot"] * cantidad
                 cantidades_totales[alimento] = cantidades_totales.get(alimento, 0) + cantidad
-                kcal_por_alimento[alimento] = kcal_por_alimento.get(alimento, 0) + kcal_calculadas
 
 procesar_bloque_comida("📸 Almuerzo", "almuerzo")
 st.markdown("---")
@@ -133,10 +128,8 @@ st.markdown("---")
 
 st.subheader("🍎 Registro de Frutas")
 frutas = st.number_input("¿Cuántas frutas enteras comiste hoy?", min_value=0, value=0, step=1)
-kcal_frutas = (frutas * 60)
-total_kcal_dia += kcal_frutas
+total_kcal_dia += (frutas * 60)
 total_prot_dia += (frutas * 0.5)
-if frutas > 0: kcal_por_alimento["Frutas Enteras"] = kcal_por_alimento.get("Frutas Enteras", 0) + kcal_frutas
 st.markdown("---")
 
 procesar_bloque_comida("📸 Cena", "cena")
@@ -151,35 +144,53 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO (DISEÑO ULTRA PLANO ANTI-FALLAS)
+# 6. 📊 BALANCE DIARIO
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
 gasto_total = int(bmr) + kcal_pasos
 deficit_real = gasto_total - total_kcal_dia
 calorias_objetivo = gasto_total - deficit_ideal
+calorias_faltantes = deficit_real - deficit_ideal
 meta_proteina = peso_actual * 1.2
 
 st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
 st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
 
-# Guardado directo al presionar el botón
 if st.button("💾 Guardar y Comparar mi Día"):
-    st.session_state["historial_progreso"].append({"Fecha": fecha_seleccionada.strftime('%d/%m/%Y'), "Usuario": nombre_usuario, "Peso (kg)": peso_actual, "Pasos": pasos, "Consumo (kcal)": int(total_kcal_dia), "Proteínas (g)": int(total_prot_dia), "Déficit (kcal)": int(deficit_real)})
+    nuevo_registro = {
+        "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
+        "Usuario": nombre_usuario,
+        "Peso (kg)": peso_actual,
+        "Pasos": pasos,
+        "Consumo (kcal)": int(total_kcal_dia),
+        "Proteínas (g)": int(total_prot_dia),
+        "Déficit (kcal)": int(deficit_real)
+    }
+    st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_registro["Fecha"]]
+    st.session_state["historial_progreso"].append(nuevo_registro)
+    
+    st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
+    st.markdown("---")
+    st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
+    
+    if deficit_real > 1200:
+        st.error(f"⚠️ ¡Cuidado {nombre_usuario}, estás comiendo muy poco! Hoy lograste un déficit de {int(deficit_real)} kcal. Te faltaron {int(calorias_faltantes)} kcal para tu meta ideal, que sería consumir {int(calorias_objetivo)} kcal en el día. ¡Mañana sumale volumen al plato con papa, batata o más carne magra!")
+    else:
+        st.success(f"🔥 ¡Excelente balance, {nombre_usuario}! Estás haciendo las cosas impecable.")
 
-st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
+    st.markdown("---")
+    if cantidades_totales.get("Huevo hervido (Unidad)", 0) > 3: st.error(f"🥚 Huevos ({int(cantidades_totales['Huevo hervido (Unidad)'])} unidades): Te sobrepasaste. Lo ideal son 2 o 3 unidades al día.")
+    if not sin_harina_azucar: st.error(f"🚨 ¡Atención! Hoy se escapó alguna harina o azúcar. ¡Mañana volvemos al camino 100% limpio!")
+    else: st.success(f"✅ ¡Disciplina impecable! Mantuviste las harinas y azúcares en CERO absoluto hoy.")
+
+# ==========================================
+# 7. 🗂️ SECCIÓN DE COMPARACIÓN TOTALMENTE FIJA (A PRUEBA DE ERRORES)
+# ==========================================
 st.markdown("---")
+st.header("🗂️ Tabla de Comparación Semanal (Historial Diario)")
+st.write("Acá abajo vas a ver la lista de todos tus días guardados para comparar tu progreso:")
 
-# ==========================================
-# 🤖 SECCIÓN DE CONSEJOS DEL COACH EN VIVO (MÁXIMA PRECISIÓN)
-# ==========================================
-st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
-
-# 🚨 ADVERTENCIA SI COMÉS DE MÁS
-if total_kcal_dia > calorias_objetivo:
-    alimento_mas_pesado = max(kcal_por_alimento, key=kcal_por_alimento.get) if kcal_por_alimento else "Ninguno"
-    st.error(f"🚨 **¡Cuidado {nombre_usuario}! Te pasaste de tus calorías.** Tu límite máximo saludable hoy eran {int(calorias_objetivo)} kcal y consumiste {int(total_kcal_dia)} kcal. **Te sobrepasaste por {int(total_kcal_dia - calorias_objetivo)} kcal.** \n\n🔍 **Dónde estuvo el exceso:** Tu mayor bomba calórica del día fue **{alimento_mas_pesado}** sumando un total de **{int(kcal_por_alimento.get(alimento_mas_pesado, 0))} kcal**. ¡Mañana controlamos mejor esa porción!")
-
-# ADVERTENCIA SI COMÉS DE MENOS PELIGROSO
-if deficit_real > 1200: st.error(f"⚠️ ¡Cuidado {nombre_usuario}, estás comiendo muy poco! Hoy lograste un deficit de {int(deficit_real)} kcal. Te faltaron {int(deficit_real - deficit_ideal)} kcal para tu meta ideal, que seria consumir {int(calorias_objetivo)} kcal en el día. ¡Mañana sumale volumen al plato con papa, batata o más carne magra!")
-
+# Muestra la tabla directamente convirtiendo la lista de sesión
+df_historial = pd.DataFrame(st.session_state["historial_progreso"])
+st.dataframe(df_historial)
