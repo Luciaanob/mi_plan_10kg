@@ -5,13 +5,15 @@ import pandas as pd
 # Configuración de la página
 st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN
+# CREAR MEMORIA DE SESIÓN PERSISTENTE PARA COMPARACIÓN
 if "historial_progreso" not in st.session_state:
     st.session_state["historial_progreso"] = []
+if "disparar_globos" not in st.session_state:
+    st.session_state["disparar_globos"] = False
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Ultra Estable v17.0 | Tu Entrenador Personal de Precisión IA")
+st.write("Versión Maestro Premium v18.0 | Tu Entrenador de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -57,7 +59,7 @@ if kilos_bajados > 0:
 else:
     st.info(f"Punto de partida: {peso_inicial} kg. ¡Hoy arranca el cambio!")
 
-# Gráfico interactivo
+# Gráfico interactivo de peso
 st.subheader("📉 Tu Curva de Descenso Histórica")
 datos_peso = pd.DataFrame({"Días": ["Inicio", "Actual"], "Peso (kg)": [peso_inicial, peso_actual]})
 st.line_chart(datos_peso.set_index("Días"))
@@ -75,7 +77,7 @@ vasos_agua = st.slider("¿Cuántos vasos de agua pura (250ml) tomaste hoy?", 0, 
 st.markdown("---")
 
 # ==========================================
-# 5. 🥑 BASE DE DATOS DE ALIMENTOS COMPLETA
+# 5. 🥑 BASE DE DATOS DE ALIMENTOS COMPLETA 
 # ==========================================
 base_alimentos = {
     "Pollo (Pechuga/Muslo)": {"kcal": 165, "prot": 31, "unidad": "100g"},
@@ -151,7 +153,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO (DISEÑO PLANO ABSOLUTO - 0% RIESGO)
+# 6. 📊 BALANCE DIARIO (DISEÑO ULTRA PLANO ANTI-FALLAS)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
@@ -164,20 +166,33 @@ meta_proteina = peso_actual * 1.2
 st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
 st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
 
-# El botón ahora ejecuta una sola línea de acción para guardar el registro sin bloques de texto adentro
+# Lógica del botón de guardado en memoria local sin anidaciones peligrosas
 if st.button("💾 Guardar y Comparar mi Día"):
-    st.session_state["historial_progreso"].append({"Fecha": fecha_seleccionada.strftime('%d/%m/%Y'), "Usuario": nombre_usuario, "Peso (kg)": peso_actual, "Pasos": pasos, "Consumo (kcal)": int(total_kcal_dia), "Proteínas (g)": int(total_prot_dia), "Déficit (kcal)": int(deficit_real)})
+    nuevo_dia = {
+        "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
+        "Usuario": nombre_usuario,
+        "Peso (kg)": peso_actual,
+        "Pasos": pasos,
+        "Consumo (kcal)": int(total_kcal_dia),
+        "Proteínas (g)": int(total_prot_dia),
+        "Déficit (kcal)": int(deficit_real)
+    }
+    st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_dia["Fecha"]]
+    st.session_state["historial_progreso"].append(nuevo_dia)
+    
+    # Evalúa si corresponde tirar globos
+    if deficit_real >= deficit_ideal and deficit_real <= 1200 and sin_harina_azucar and total_prot_dia >= meta_proteina and total_kcal_dia <= calorias_objetivo:
+        st.session_state["disparar_globos"] = True
 
-# TODO EL CONTENIDO CORRE TOTALMENTE LIBERADO AFUERA DEL BOTÓN (CHAU ERRORES DE INDENTACIÓN PARA SIEMPRE)
+# Disparo de globos si se cumplió la meta
+if st.session_state["disparar_globos"]:
+    st.balloons()
+    st.session_state["disparar_globos"] = False
+
 st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
 st.markdown("---")
 st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
 
-# Bloques de texto planos e independientes
+# CONSEJOS COMPLETOS DEL COACH TOTALMENTE PLANOS EN LA LÍNEA PRINCIPAL
 if total_kcal_dia > calorias_objetivo:
     alimento_mas_pesado = max(kcal_por_alimento, key=kcal_por_alimento.get) if kcal_por_alimento else "Ninguno"
-    st.error(f"🚨 **¡Cuidado {nombre_usuario}! Te pasaste de tus calorías.** Tu límite máximo saludable hoy eran {int(calorias_objetivo)} kcal y consumiste {int(total_kcal_dia)} kcal. **Te sobrepasaste por {int(total_kcal_dia - calorias_objetivo)} kcal.** \n\n🔍 **Dónde estuvo el exceso:** Tu mayor bomba calórica del día fue **{alimento_mas_pesado}** sumando **{int(kcal_por_alimento.get(alimento_mas_pesado, 0))} kcal**. ¡Mañana controlamos mejor esa porción!")
-
-if deficit_real > 1200:
-    st.error(f"⚠️ ¡Cuidado {nombre_usuario}, estás comiendo muy poco! Hoy lograste un deficit de {int(deficit_real)} kcal. Te faltaron {int(calorias_faltantes)} kcal para tu meta ideal, que seria consumir {int(calorias_objetivo)} kcal en el día. ¡Mañana sumale volumen al plato con papa, batata o más carne magra!")
-
