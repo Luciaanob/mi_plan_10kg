@@ -5,13 +5,13 @@ import pandas as pd
 # Configuración de la página
 st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN (Local, estable y sin fallas de internet)
+# CREAR MEMORIA DE SESIÓN (Local y estable)
 if "historial_progreso" not in st.session_state:
     st.session_state["historial_progreso"] = []
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Ultra Estable v15.2 | Tu Entrenador Personal de Precisión IA")
+st.write("Versión Coach Inteligente v16.0 | Tu Entrenador de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -151,7 +151,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO (DISEÑO ULTRA SEGURO SIN SANGRÍAS INTERNAS)
+# 6. 📊 BALANCE DIARIO (LÓGICA BLINDADA INTEGRADA)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
@@ -164,8 +164,16 @@ st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
 st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
 
 if st.button("💾 Guardar y Comparar mi Día"):
-    # Registro de datos inmediato
-    nuevo_registro = {"Fecha": fecha_seleccionada.strftime('%d/%m/%Y'), "Usuario": nombre_usuario, "Peso (kg)": peso_actual, "Pasos": pasos, "Consumo (kcal)": int(total_kcal_dia), "Proteínas (g)": int(total_prot_dia), "Déficit (kcal)": int(deficit_real)}
+    # REGISTRO SEGURO EN EL HISTORIAL AL APRETAR EL BOTÓN
+    nuevo_registro = {
+        "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
+        "Usuario": nombre_usuario,
+        "Peso (kg)": peso_actual,
+        "Pasos": pasos,
+        "Consumo (kcal)": int(total_kcal_dia),
+        "Proteínas (g)": int(total_prot_dia),
+        "Déficit (kcal)": int(deficit_real)
+    }
     st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_registro["Fecha"]]
     st.session_state["historial_progreso"].append(nuevo_registro)
     
@@ -173,7 +181,12 @@ if st.button("💾 Guardar y Comparar mi Día"):
     st.markdown("---")
     st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
     
-    # SECCIÓN TOTALMENTE CORRIDA EN UNA SOLA LÍNEA SIN CONDICIONES DE CAÍDA DE PYTHON
-    if total_kcal_dia > calorias_objetivo: alimento_pesado = max(kcal_por_alimento, key=kcal_por_alimento.get) if kcal_por_alimento else "Ninguno"
-    if total_kcal_dia > calorias_objetivo: st.error(f"🚨 **¡Cuidado {nombre_usuario}! Te pasaste de tus calorías.** Tu límite máximo saludable eran {int(calorias_objetivo)} kcal y consumiste {int(total_kcal_dia)} kcal. **Te sobrepasaste por {int(total_kcal_dia - calorias_objetivo)} kcal.** \n\n🔍 **Dónde estuvo el exceso:** Tu mayor bomba calórica del día fue **{alimento_pesado}** sumando **{int(kcal_por_alimento.get(alimento_pesado, 0))} kcal**. ¡Mañana controlamos mejor esa porción!")
+    # ⚠️ ALERTA DE EXCESO DE CALORÍAS (REQUERIMIENTO LUCIANO)
+    if total_kcal_dia > calorias_objetivo:
+        kcal_sobrepasadas = total_kcal_dia - calorias_objetivo
+        alimento_mas_pesado = max(kcal_por_alimento, key=kcal_por_alimento.get) if kcal_por_alimento else "Ninguno"
+        kcal_del_mas_pesado = int(kcal_por_alimento[alimento_mas_pesado]) if kcal_por_alimento else 0
+        st.error(f"🚨 **¡Cuidado {nombre_usuario}! Te pasaste de tus calorías.** Tu límite máximo saludable hoy eran {int(calorias_objetivo)} kcal y consumiste {int(total_kcal_dia)} kcal. **Te sobrepasaste por {int(kcal_sobrepasadas)} kcal.**  \n🔍 **Dónde estuvo el exceso:** Tu mayor bomba calórica del día fue **{alimento_mas_pesado}** sumando un total de **{kcal_del_mas_pesado} kcal**. ¡Mañana controlamos mejor esa porción!")
     
+    # ALERTAS DE DEFICIT SALUDABLE O BAJO
+    if deficit_real > 1200:
