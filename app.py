@@ -5,7 +5,7 @@ import pandas as pd
 # Configuración de la página
 st.set_page_config(page_title="Meta -10kg by Luciano Bravo", page_icon="💪", layout="centered")
 
-# CREAR MEMORIA DE SESIÓN PERSISTENTE PARA COMPARACIÓN
+# CREAR MEMORIA DE SESIÓN (Fija para comparar el día a día)
 if "historial_progreso" not in st.session_state:
     st.session_state["historial_progreso"] = []
 if "disparar_globos" not in st.session_state:
@@ -13,7 +13,7 @@ if "disparar_globos" not in st.session_state:
 
 # TÍTULO PERSONALIZADO
 st.title("💪 Meta -10kg by Luciano Bravo")
-st.write("Versión Maestro Premium v18.0 | Tu Entrenador de Precisión IA")
+st.write("Versión Maestro Premium v19.0 | Tu Entrenador de Precisión IA")
 
 # ==========================================
 # 1. 📅 SECCIÓN MAESTRA: CALENDARIO Y NOMBRE
@@ -153,7 +153,7 @@ hora_fin_ayuno = (datetime.datetime.combine(datetime.date.today(), hora_cena) + 
 st.info(f"🔒 Tu ayuno termina mañana a las: **{hora_fin_ayuno.strftime('%H:%M')} hs**")
 
 # ==========================================
-# 6. 📊 BALANCE DIARIO (DISEÑO ULTRA PLANO ANTI-FALLAS)
+# 6. 📊 BALANCE DIARIO (DISEÑO TOTALMENTE PLANO - 0% RIESGO)
 # ==========================================
 st.header("📊 Tu Balance del Día")
 
@@ -166,33 +166,24 @@ meta_proteina = peso_actual * 1.2
 st.metric(label="Calorías Consumidas", value=f"{int(total_kcal_dia)} kcal")
 st.metric(label="Proteínas Totales", value=f"{int(total_prot_dia)} g")
 
-# Lógica del botón de guardado en memoria local sin anidaciones peligrosas
+# El botón ahora ejecuta solo la acción de guardar en una sola línea de código sin textos
 if st.button("💾 Guardar y Comparar mi Día"):
-    nuevo_dia = {
-        "Fecha": fecha_seleccionada.strftime('%d/%m/%Y'),
-        "Usuario": nombre_usuario,
-        "Peso (kg)": peso_actual,
-        "Pasos": pasos,
-        "Consumo (kcal)": int(total_kcal_dia),
-        "Proteínas (g)": int(total_prot_dia),
-        "Déficit (kcal)": int(deficit_real)
-    }
-    st.session_state["historial_progreso"] = [r for r in st.session_state["historial_progreso"] if r["Fecha"] != nuevo_dia["Fecha"]]
-    st.session_state["historial_progreso"].append(nuevo_dia)
-    
-    # Evalúa si corresponde tirar globos
+    st.session_state["historial_progreso"].append({"Fecha": fecha_seleccionada.strftime('%d/%m/%Y'), "Usuario": nombre_usuario, "Peso (kg)": peso_actual, "Pasos": pasos, "Consumo (kcal)": int(total_kcal_dia), "Proteínas (g)": int(total_prot_dia), "Déficit (kcal)": int(deficit_real)})
     if deficit_real >= deficit_ideal and deficit_real <= 1200 and sin_harina_azucar and total_prot_dia >= meta_proteina and total_kcal_dia <= calorias_objetivo:
         st.session_state["disparar_globos"] = True
 
-# Disparo de globos si se cumplió la meta
+# Globos de racha perfecta
 if st.session_state["disparar_globos"]:
     st.balloons()
     st.session_state["disparar_globos"] = False
 
+# ==========================================
+# 🤖 SECCIÓN DE CONSEJOS DEL COACH PARA BIEN O PARA MAL (100% FIJA EN PANTALLA)
+# ==========================================
 st.metric(label="Déficit Real Logrado", value=f"{int(deficit_real)} kcal")
 st.markdown("---")
 st.subheader(f"🤖 El Consejo de tu Coach para {nombre_usuario}:")
 
-# CONSEJOS COMPLETOS DEL COACH TOTALMENTE PLANOS EN LA LÍNEA PRINCIPAL
+# Alerta de exceso de calorías (Si comés de más)
 if total_kcal_dia > calorias_objetivo:
     alimento_mas_pesado = max(kcal_por_alimento, key=kcal_por_alimento.get) if kcal_por_alimento else "Ninguno"
